@@ -1,30 +1,28 @@
 [package]
-name = "jungle"
-version = "0.1.0"
 authors = ["Brooks Patton <brooks@brookzerker.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+name = "jungle"
+version = "0.1.0"
 
 [dependencies]
+console_error_panic_hook = "0.1.6"
 js-sys = "0.3.45"
 wasm-bindgen = "0.2.68"
 
 [dependencies.web-sys]
+features = ["CanvasRenderingContext2d", "Document", "Element", "HtmlCanvasElement", "Window", "HtmlImageElement", "console"]
 version = "0.3.4"
-features = [
-  'CanvasRenderingContext2d',
-  'Document',
-  'Element',
-  'HtmlCanvasElement',
-  'Window',
-]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[metadata]
+[metadata.wasm-pack]
+[metadata.wasm-pack.profile]
+[metadata.wasm-pack.profile.release]
+wasm-opt = false
+
+[profile]
 [profile.release]
 opt-level = "s"
-
-[package.metadata.wasm-pack.profile.release]
 wasm-opt = false
