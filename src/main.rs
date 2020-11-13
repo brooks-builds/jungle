@@ -15,7 +15,7 @@ fn main() {
         Err(error) => panic!(error),
     };
 
-    let game_state = &mut GameState::new();
+    let game_state = &mut GameState::new(config).unwrap();
 
     match event::run(context, event_loop, game_state) {
         Ok(_) => println!("Thanks for playing!"),

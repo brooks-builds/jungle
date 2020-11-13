@@ -1,8 +1,11 @@
 use ggez::{
+    event::Button,
     graphics::DrawParam,
     graphics::{self, Font, Scale, Text},
     Context, GameResult,
 };
+
+use crate::config::Config;
 
 use super::Scene;
 
@@ -21,7 +24,18 @@ impl StartScene {
 }
 
 impl Scene for StartScene {
-    fn update(&mut self, _context: &mut Context) -> GameResult {
+    fn update(
+        &mut self,
+        _context: &mut Context,
+        button_pressed: Option<Button>,
+        config: &Config,
+        active_scene: &mut super::ActiveScene,
+    ) -> GameResult {
+        if let Some(button) = button_pressed {
+            if button as u16 == config.start_button as u16 {
+                active_scene.change_to_main();
+            }
+        }
         Ok(())
     }
 

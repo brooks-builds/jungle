@@ -1,8 +1,11 @@
 use ggez::{
+    event::Button,
     graphics::DrawParam,
     graphics::{self, Font, Scale, Text},
     Context, GameResult,
 };
+
+use crate::config::Config;
 
 use super::Scene;
 
@@ -21,7 +24,13 @@ impl MainScene {
 }
 
 impl Scene for MainScene {
-    fn update(&mut self, _context: &mut Context) -> GameResult {
+    fn update(
+        &mut self,
+        _context: &mut Context,
+        button_pressed: Option<Button>,
+        config: &Config,
+        active_scene: &mut super::ActiveScene,
+    ) -> GameResult {
         Ok(())
     }
 
