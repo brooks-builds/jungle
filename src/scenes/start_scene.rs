@@ -2,6 +2,7 @@ use ggez::{
     event::Button,
     graphics::DrawParam,
     graphics::{self, Font, Scale, Text},
+    nalgebra::Point2,
     Context, GameResult,
 };
 
@@ -9,17 +10,36 @@ use crate::config::Config;
 
 use super::Scene;
 
-#[derive(Default)]
 pub struct StartScene {
-    text: Text,
+    title: Text,
+    title_position: Point2<f32>,
+    subtitle: Text,
+    subtitle_position: Point2<f32>,
 }
 
 impl StartScene {
-    pub fn new() -> Self {
-        let mut text = Text::new("Start Scene");
-        text.set_font(Font::default(), Scale::uniform(72.0));
+    pub fn new(config: &Config, context: &mut Context) -> Self {
+        let mut title = Text::new(config.title.clone());
+        title.set_font(Font::default(), Scale::uniform(config.font_large));
+        let (title_width, title_height) = title.dimensions(context);
+        let title_position = Point2::new(
+            config.resolution_x / 2.0 - (title_width / 2) as f32,
+            config.resolution_y / 2.0 - (title_height / 2) as f32,
+        );
 
-        StartScene { text }
+        let mut subtitle = Text::new(config.title_subtext.clone());
+        subtitle.set_font(Font::default(), Scale::uniform(config.font_small));
+        let subtitle_position = Point2::new(
+            config.resolution_x / 2.0 - subtitle.width(context) as f32 / 2.0,
+            config.resolution_y - config.resolution_y / 4.0,
+        );
+
+        StartScene {
+            title,
+            title_position,
+            subtitle,
+            subtitle_position,
+        }
     }
 }
 
@@ -40,6 +60,16 @@ impl Scene for StartScene {
     }
 
     fn draw(&self, context: &mut Context) -> GameResult {
-        graphics::draw(context, &self.text, DrawParam::new())
+        graphics::draw(
+            context,
+            &self.title,
+            DrawParam::new().dest(self.title_position),
+        )?;
+
+        graphics::draw(
+            context,
+            &self.subtitle,
+            DrawParam::new().dest(self.subtitle_position),
+        )
     }
 }

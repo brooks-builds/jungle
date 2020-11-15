@@ -1,5 +1,10 @@
 {
     "resolution_x": 1920,
     "resolution_y": 1080,
-    "start_button": "Start"
+    "start_button": "Start",
+    "title": "Jungle",
+    "title_subtext": "Press start to begin",
+    "font_large": 72.0,
+    "font_medium": 55.0,
+    "font_small": 36.0
 }

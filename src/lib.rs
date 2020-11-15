@@ -21,9 +21,9 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn new(config: Config) -> GameResult<GameState> {
+    pub fn new(config: Config, context: &mut Context) -> GameResult<GameState> {
         let active_scene = ActiveScene::Start;
-        let starting_scene = StartScene::new();
+        let starting_scene = StartScene::new(&config, context);
         let main_scene = MainScene::new();
         let pause_scene = PauseScene::new();
         let end_scene = EndScene::new();
@@ -46,7 +46,7 @@ impl EventHandler for GameState {
         while timer::check_update_time(context, 30) {
             let button_pressed = if let Some(gamepad_event) = self.gamepad.next_event() {
                 match gamepad_event.event {
-                    ggez::input::gamepad::gilrs::EventType::ButtonPressed(button, code) => {
+                    ggez::input::gamepad::gilrs::EventType::ButtonPressed(button, _code) => {
                         Some(button)
                     }
                     _ => None,

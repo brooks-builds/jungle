@@ -27,9 +27,9 @@ impl Scene for EndScene {
     fn update(
         &mut self,
         _context: &mut Context,
-        button_pressed: Option<Button>,
-        config: &Config,
-        active_scene: &mut super::ActiveScene,
+        _button_pressed: Option<Button>,
+        _config: &Config,
+        _active_scene: &mut super::ActiveScene,
     ) -> GameResult {
         Ok(())
     }
