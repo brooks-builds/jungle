@@ -1,8 +1,11 @@
 use ggez::{
+    event::Button,
     graphics::DrawParam,
     graphics::{self, Font, Scale, Text},
     Context, GameResult,
 };
+
+use crate::config::Config;
 
 use super::Scene;
 
@@ -21,7 +24,13 @@ impl PauseScene {
 }
 
 impl Scene for PauseScene {
-    fn update(&mut self, _context: &mut Context) -> GameResult {
+    fn update(
+        &mut self,
+        _context: &mut Context,
+        _button_pressed: Option<Button>,
+        _config: &Config,
+        _active_scene: &mut super::ActiveScene,
+    ) -> GameResult {
         Ok(())
     }
 
