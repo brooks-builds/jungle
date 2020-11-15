@@ -6,5 +6,31 @@
     "title_subtext": "Press start to begin",
     "font_large": 72.0,
     "font_medium": 55.0,
-    "font_small": 36.0
+    "font_small": 36.0,
+    "start_index": 0,
+    "map": [
+        {
+
+        }
+    ],
+    "bedrock_height": 15.0,
+    "bedrock_color": [147, 94, 59],
+    "cave_height": 200.0,
+    "ground_height": 50.0,
+    "ground_color": [146,137,60],
+    "surface_height": 150.0,
+    "surface_color": [189,179,94],
+    "tree_trunk_color": [74,69,31],
+    "tree_trunk_height": 300.0,
+    "tree_trunk_width": 50.0,
+    "tree_trunk_count": 9,
+    "tree_trunk_start": 150.0,
+    "tree_trunk_shift_by": 25.0,
+    "tree_branch_width": 10.0,
+    "tree_branch_height": 50.0,
+    "tree_branch_rotation": 2.3599982,
+    "background_color": [164, 196, 112],
+    "leaves_shift_by": 40.0,
+    "leaf_points": 4,
+    "leaf_color": [33, 43, 18]
 }

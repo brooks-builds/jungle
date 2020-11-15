@@ -59,7 +59,7 @@ impl Scene for StartScene {
         Ok(())
     }
 
-    fn draw(&self, context: &mut Context) -> GameResult {
+    fn draw(&self, context: &mut Context, config: &Config) -> GameResult {
         graphics::draw(
             context,
             &self.title,
