@@ -43,10 +43,10 @@ pub struct Config {
     pub tree_branch_rotation: f32,
     #[serde(with = "crate::config::serde_color")]
     pub background_color: Color,
-    pub leaves_shift_by: f32,
-    pub leaf_points: u8,
+    pub foliage_points: u8,
+    pub foliage_step: f32,
     #[serde(with = "crate::config::serde_color")]
-    pub leaf_color: Color,
+    pub foliage_color: Color,
 }
 
 pub fn load(file_name: &str) -> eyre::Result<Config> {

@@ -1,4 +1,5 @@
 pub mod config;
+mod game_objects;
 mod scenes;
 
 use config::Config;
