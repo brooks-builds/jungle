@@ -36,5 +36,5 @@ pub trait Scene {
         active_scene: &mut ActiveScene,
     ) -> GameResult;
 
-    fn draw(&self, context: &mut Context) -> GameResult;
+    fn draw(&self, context: &mut Context, config: &Config) -> GameResult;
 }

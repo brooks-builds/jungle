@@ -1,4 +1,5 @@
 pub mod config;
+mod game_objects;
 mod scenes;
 
 use config::Config;
@@ -22,9 +23,9 @@ pub struct GameState {
 
 impl GameState {
     pub fn new(config: Config, context: &mut Context) -> GameResult<GameState> {
-        let active_scene = ActiveScene::Start;
+        let active_scene = ActiveScene::Main;
         let starting_scene = StartScene::new(&config, context);
-        let main_scene = MainScene::new();
+        let main_scene = MainScene::new(&config, context)?;
         let pause_scene = PauseScene::new();
         let end_scene = EndScene::new();
         let gamepad = Gilrs::new()?;
@@ -90,10 +91,10 @@ impl EventHandler for GameState {
         graphics::clear(context, BLACK);
 
         match self.active_scene {
-            ActiveScene::Start => self.starting_scene.draw(context)?,
-            ActiveScene::Main => self.main_scene.draw(context)?,
-            ActiveScene::Pause => self.pause_scene.draw(context)?,
-            ActiveScene::End => self.end_scene.draw(context)?,
+            ActiveScene::Start => self.starting_scene.draw(context, &self.config)?,
+            ActiveScene::Main => self.main_scene.draw(context, &self.config)?,
+            ActiveScene::Pause => self.pause_scene.draw(context, &self.config)?,
+            ActiveScene::End => self.end_scene.draw(context, &self.config)?,
         }
 
         graphics::present(context)

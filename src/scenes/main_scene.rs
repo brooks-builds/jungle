@@ -1,25 +1,41 @@
-use ggez::{
-    event::Button,
-    graphics::DrawParam,
-    graphics::{self, Font, Scale, Text},
-    Context, GameResult,
-};
+use ggez::{event::Button, Context, GameResult};
 
-use crate::config::Config;
+use crate::{
+    config::Config,
+    game_objects::{
+        bedrock::Bedrock, foliage::Foliage, ground::Ground, surface::Surface,
+        surface_background::SurfaceBackground, tree_trunks::TreeTrunks, StaticGameObject,
+    },
+};
 
 use super::Scene;
 
-#[derive(Default)]
 pub struct MainScene {
-    text: Text,
+    bedrock: Bedrock,
+    ground: Ground,
+    surface: Surface,
+    surface_background: SurfaceBackground,
+    tree_trunks: TreeTrunks,
+    foliage: Foliage,
 }
 
 impl MainScene {
-    pub fn new() -> Self {
-        let mut text = Text::new("main scene");
-        text.set_font(Font::default(), Scale::uniform(72.0));
+    pub fn new(config: &Config, context: &mut Context) -> GameResult<Self> {
+        let bedrock = Bedrock::new(config, context)?;
+        let ground = Ground::new(config, context)?;
+        let surface = Surface::new(config, context)?;
+        let surface_background = SurfaceBackground::new(config, context)?;
+        let tree_trunks = TreeTrunks::new(config, context)?;
+        let foliage = Foliage::new(config, context)?;
 
-        MainScene { text }
+        Ok(MainScene {
+            bedrock,
+            ground,
+            surface,
+            surface_background,
+            tree_trunks,
+            foliage,
+        })
     }
 }
 
@@ -34,7 +50,14 @@ impl Scene for MainScene {
         Ok(())
     }
 
-    fn draw(&self, context: &mut Context) -> GameResult {
-        graphics::draw(context, &self.text, DrawParam::new())
+    fn draw(&self, context: &mut Context, config: &Config) -> GameResult {
+        self.bedrock.draw(config, context)?;
+        self.ground.draw(config, context)?;
+        self.surface.draw(config, context)?;
+        self.surface_background.draw(config, context)?;
+        self.tree_trunks.draw(config, context)?;
+        self.foliage.draw(config, context)?;
+
+        Ok(())
     }
 }
