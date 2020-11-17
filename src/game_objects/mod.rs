@@ -1,6 +1,7 @@
 pub mod bedrock;
 pub mod foliage;
 pub mod ground;
+pub mod pit;
 pub mod surface;
 pub mod surface_background;
 pub mod tree_trunks;

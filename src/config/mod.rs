@@ -6,7 +6,7 @@ use ggez::{event::Button, graphics::Color};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 
-use self::map::Map;
+use self::map::ConfigMap;
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -19,7 +19,7 @@ pub struct Config {
     pub font_large: f32,
     pub font_medium: f32,
     pub font_small: f32,
-    pub map: Vec<Map>,
+    pub map: Vec<ConfigMap>,
     pub start_index: usize,
     pub bedrock_height: f32,
     #[serde(with = "crate::config::serde_color")]
@@ -47,6 +47,10 @@ pub struct Config {
     pub foliage_step_vertical: f32,
     #[serde(with = "crate::config::serde_color")]
     pub foliage_color: Color,
+    pub pit_width: f32,
+    pub pit_margin: f32,
+    #[serde(with = "crate::config::serde_color")]
+    pub pit_color: Color,
 }
 
 pub fn load(file_name: &str) -> eyre::Result<Config> {

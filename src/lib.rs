@@ -1,11 +1,13 @@
 pub mod config;
 mod game_objects;
+mod map;
 mod scenes;
 
 use config::Config;
 use ggez::{event::EventHandler, input::gamepad::Gilrs};
 use ggez::{graphics, Context, GameResult};
 use ggez::{graphics::BLACK, timer};
+use map::Map;
 use scenes::{
     end_scene::EndScene, main_scene::MainScene, pause_scene::PauseScene, start_scene::StartScene,
     ActiveScene, Scene,
@@ -25,7 +27,8 @@ impl GameState {
     pub fn new(config: Config, context: &mut Context) -> GameResult<GameState> {
         let active_scene = ActiveScene::Main;
         let starting_scene = StartScene::new(&config, context);
-        let main_scene = MainScene::new(&config, context)?;
+        let map = Map::new(&config, context)?;
+        let main_scene = MainScene::new(&config, context, map)?;
         let pause_scene = PauseScene::new();
         let end_scene = EndScene::new();
         let gamepad = Gilrs::new()?;
