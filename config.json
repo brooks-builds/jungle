@@ -10,7 +10,10 @@
     "start_index": 0,
     "map": [
         {
-
+            "pits": 0
+        },
+        {
+            "pits": 1
         }
     ],
     "bedrock_height": 15.0,
@@ -32,5 +35,8 @@
     "background_color": [164, 196, 112],
     "foliage_points": 25,
     "foliage_step_vertical": 15.0,
-    "foliage_color": [33, 43, 18]
+    "foliage_color": [33, 43, 18],
+    "pit_width": 75.0,
+    "pit_margin": 5.0,
+    "pit_color": [0, 0, 0]
 }
