@@ -1,13 +1,4 @@
-use std::{collections::HashMap, f32::consts::PI};
-
-use ggez::{
-    event::Button,
-    graphics::DrawParam,
-    graphics::{self, DrawMode, Font, Mesh, MeshBuilder, Rect, Scale, Text},
-    nalgebra::Point2,
-    Context, GameResult,
-};
-use rand::Rng;
+use ggez::{event::Button, Context, GameResult};
 
 use crate::{
     config::Config,
@@ -20,7 +11,6 @@ use crate::{
 use super::Scene;
 
 pub struct MainScene {
-    map_index: usize,
     bedrock: Bedrock,
     ground: Ground,
     surface: Surface,
@@ -31,7 +21,6 @@ pub struct MainScene {
 
 impl MainScene {
     pub fn new(config: &Config, context: &mut Context) -> GameResult<Self> {
-        let map_index = config.start_index;
         let bedrock = Bedrock::new(config, context)?;
         let ground = Ground::new(config, context)?;
         let surface = Surface::new(config, context)?;
@@ -40,7 +29,6 @@ impl MainScene {
         let foliage = Foliage::new(config, context)?;
 
         Ok(MainScene {
-            map_index,
             bedrock,
             ground,
             surface,

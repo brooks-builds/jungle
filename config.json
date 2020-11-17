@@ -30,7 +30,7 @@
     "tree_branch_height": 50.0,
     "tree_branch_rotation": 2.3599982,
     "background_color": [164, 196, 112],
-    "foliage_points": 10,
-    "foliage_step": 10.0,
+    "foliage_points": 25,
+    "foliage_step_vertical": 15.0,
     "foliage_color": [33, 43, 18]
 }

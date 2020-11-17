@@ -4,7 +4,7 @@ mod serde_color;
 
 use ggez::{event::Button, graphics::Color};
 use serde::{Deserialize, Serialize};
-use std::{fs::File, io::Read};
+use std::fs::File;
 
 use self::map::Map;
 
@@ -44,7 +44,7 @@ pub struct Config {
     #[serde(with = "crate::config::serde_color")]
     pub background_color: Color,
     pub foliage_points: u8,
-    pub foliage_step: f32,
+    pub foliage_step_vertical: f32,
     #[serde(with = "crate::config::serde_color")]
     pub foliage_color: Color,
 }

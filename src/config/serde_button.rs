@@ -4,7 +4,6 @@ pub fn serialize<S>(button: &Button, ser: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,
 {
-    use serde::ser::SerializeSeq as _;
     match button {
         Button::Start => ser.serialize_str("Start"),
         _ => Err(serde::ser::Error::custom("unknown button pressed")),

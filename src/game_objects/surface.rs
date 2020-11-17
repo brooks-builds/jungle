@@ -36,7 +36,7 @@ impl Surface {
 }
 
 impl StaticGameObject for Surface {
-    fn draw(&self, config: &Config, context: &mut Context) -> GameResult {
+    fn draw(&self, _config: &Config, context: &mut Context) -> GameResult {
         graphics::draw(context, &self.mesh, DrawParam::new())
     }
 }
