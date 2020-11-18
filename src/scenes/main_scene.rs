@@ -1,16 +1,19 @@
 use ggez::{event::Button, Context, GameResult};
 
-use crate::{config::Config, map::Map};
+use crate::{config::Config, game_objects::player::Player, map::Map};
 
 use super::Scene;
 
 pub struct MainScene {
     map: Map,
+    player: Player,
 }
 
 impl MainScene {
-    pub fn new(_config: &Config, _context: &mut Context, map: Map) -> GameResult<Self> {
-        Ok(MainScene { map })
+    pub fn new(config: &Config, context: &mut Context, map: Map) -> GameResult<Self> {
+        let player = Player::new(config, context)?;
+
+        Ok(MainScene { map, player })
     }
 }
 
@@ -27,6 +30,7 @@ impl Scene for MainScene {
 
     fn draw(&self, context: &mut Context, config: &Config) -> GameResult {
         self.map.draw(context, config)?;
+        self.player.draw(context)?;
 
         Ok(())
     }
