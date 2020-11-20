@@ -1,5 +1,8 @@
 pub mod config;
+mod draw_systems;
 mod game_objects;
+mod images;
+pub mod initialize;
 mod map;
 mod scenes;
 
@@ -7,6 +10,7 @@ use config::Config;
 use ggez::{event::EventHandler, input::gamepad::Gilrs};
 use ggez::{graphics, Context, GameResult};
 use ggez::{graphics::BLACK, timer};
+use images::Images;
 use map::Map;
 use scenes::{
     end_scene::EndScene, main_scene::MainScene, pause_scene::PauseScene, start_scene::StartScene,
@@ -21,10 +25,11 @@ pub struct GameState {
     end_scene: EndScene,
     gamepad: Gilrs,
     config: Config,
+    images: Images,
 }
 
 impl GameState {
-    pub fn new(config: Config, context: &mut Context) -> GameResult<GameState> {
+    pub fn new(config: Config, context: &mut Context) -> GameResult<Self> {
         let active_scene = ActiveScene::Main;
         let starting_scene = StartScene::new(&config, context);
         let map = Map::new(&config, context)?;
@@ -32,8 +37,9 @@ impl GameState {
         let pause_scene = PauseScene::new();
         let end_scene = EndScene::new();
         let gamepad = Gilrs::new()?;
+        let images = Images::new(context, &config)?;
 
-        Ok(GameState {
+        Ok(Self {
             active_scene,
             starting_scene,
             main_scene,
@@ -41,6 +47,7 @@ impl GameState {
             end_scene,
             gamepad,
             config,
+            images,
         })
     }
 }
@@ -94,12 +101,26 @@ impl EventHandler for GameState {
         graphics::clear(context, BLACK);
 
         match self.active_scene {
-            ActiveScene::Start => self.starting_scene.draw(context, &self.config)?,
-            ActiveScene::Main => self.main_scene.draw(context, &self.config)?,
-            ActiveScene::Pause => self.pause_scene.draw(context, &self.config)?,
-            ActiveScene::End => self.end_scene.draw(context, &self.config)?,
+            ActiveScene::Start => self
+                .starting_scene
+                .draw(context, &self.config, &self.images)?,
+            ActiveScene::Main => self.main_scene.draw(context, &self.config, &self.images)?,
+            ActiveScene::Pause => self.pause_scene.draw(context, &self.config, &self.images)?,
+            ActiveScene::End => self.end_scene.draw(context, &self.config, &self.images)?,
         }
 
         graphics::present(context)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_create_game_state() {
+        let config = config::load("config.json").unwrap();
+        let (context, _) = &mut initialize::initialize(&config).unwrap();
+        let _game_state = GameState::new(config, context).unwrap();
     }
 }

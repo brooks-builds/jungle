@@ -6,7 +6,7 @@ use ggez::{
     Context, GameResult,
 };
 
-use crate::config::Config;
+use crate::{config::Config, images::Images};
 
 use super::Scene;
 
@@ -59,7 +59,7 @@ impl Scene for StartScene {
         Ok(())
     }
 
-    fn draw(&self, context: &mut Context, _config: &Config) -> GameResult {
+    fn draw(&self, context: &mut Context, _config: &Config, _images: &Images) -> GameResult {
         graphics::draw(
             context,
             &self.title,

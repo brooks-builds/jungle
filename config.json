@@ -40,5 +40,7 @@
     "pit_margin": 5.0,
     "pit_color": [0, 0, 0],
     "player_standing_image": "/jungle_player_standing.png",
-    "player_running_spritesheet": "/jungle_player_running-Sheet.png"
+    "player_running_spritesheet": "/jungle_player_running-Sheet.png",
+    "player_starting_x": 150.0,
+    "player_starting_y": 600.0
 }

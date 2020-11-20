@@ -1,6 +1,6 @@
 use ggez::{event::Button, Context, GameResult};
 
-use crate::config::Config;
+use crate::{config::Config, images::Images};
 
 pub mod end_scene;
 pub mod main_scene;
@@ -36,5 +36,5 @@ pub trait Scene {
         active_scene: &mut ActiveScene,
     ) -> GameResult;
 
-    fn draw(&self, context: &mut Context, config: &Config) -> GameResult;
+    fn draw(&self, context: &mut Context, config: &Config, images: &Images) -> GameResult;
 }
