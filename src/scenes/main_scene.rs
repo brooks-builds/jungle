@@ -2,7 +2,8 @@ use ggez::{event::Button, nalgebra::Point2, Context, GameResult};
 
 use crate::{
     config::Config, draw_systems::player_draw_system::PlayerDrawSystem, game_objects::GameObject,
-    images::Images, map::Map,
+    handle_input::Command, images::Images, map::Map,
+    physics_systems::player_physics_system::PlayerPhysicsSystem,
 };
 
 use super::Scene;
@@ -17,6 +18,7 @@ impl MainScene {
         let player = GameObject::new(
             Point2::new(config.player_starting_x, config.player_starting_y),
             Box::new(PlayerDrawSystem::new()),
+            Some(Box::new(PlayerPhysicsSystem::new(config))),
         )?;
 
         Ok(MainScene { map, player })
@@ -27,10 +29,11 @@ impl Scene for MainScene {
     fn update(
         &mut self,
         _context: &mut Context,
-        _button_pressed: Option<Button>,
+        command: Option<Command>,
         _config: &Config,
         _active_scene: &mut super::ActiveScene,
     ) -> GameResult {
+        self.player.update(command);
         Ok(())
     }
 

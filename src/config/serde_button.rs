@@ -6,6 +6,7 @@ where
 {
     match button {
         Button::Start => ser.serialize_str("Start"),
+        Button::DPadRight => ser.serialize_str("DPadRight"),
         _ => Err(serde::ser::Error::custom("unknown button pressed")),
     }
 }
@@ -18,6 +19,7 @@ where
     let button_string = <String>::deserialize(deser)?;
     match button_string.as_str() {
         "Start" => Ok(Button::Start),
+        "DPadRight" => Ok(Button::DPadRight),
         _ => Err(serde::de::Error::custom("Unknown button")),
     }
 }

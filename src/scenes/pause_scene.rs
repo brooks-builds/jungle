@@ -5,7 +5,7 @@ use ggez::{
     Context, GameResult,
 };
 
-use crate::{config::Config, images::Images};
+use crate::{config::Config, handle_input::Command, images::Images};
 
 use super::Scene;
 
@@ -27,7 +27,7 @@ impl Scene for PauseScene {
     fn update(
         &mut self,
         _context: &mut Context,
-        _button_pressed: Option<Button>,
+        _button_pressed: Option<Command>,
         _config: &Config,
         _active_scene: &mut super::ActiveScene,
     ) -> GameResult {

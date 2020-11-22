@@ -6,7 +6,7 @@ use ggez::{
     Context, GameResult,
 };
 
-use crate::{config::Config, images::Images};
+use crate::{config::Config, handle_input::Command, images::Images};
 
 use super::Scene;
 
@@ -47,12 +47,12 @@ impl Scene for StartScene {
     fn update(
         &mut self,
         _context: &mut Context,
-        button_pressed: Option<Button>,
+        command: Option<Command>,
         config: &Config,
         active_scene: &mut super::ActiveScene,
     ) -> GameResult {
-        if let Some(button) = button_pressed {
-            if button as u16 == config.start_button as u16 {
+        if let Some(command) = command {
+            if matches!(command, Command::StartGame) {
                 active_scene.change_to_main();
             }
         }
