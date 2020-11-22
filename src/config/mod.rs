@@ -51,6 +51,10 @@ pub struct Config {
     pub pit_margin: f32,
     #[serde(with = "crate::config::serde_color")]
     pub pit_color: Color,
+    pub player_standing_image: String,
+    pub player_running_spritesheet: String,
+    pub player_starting_x: f32,
+    pub player_starting_y: f32,
 }
 
 pub fn load(file_name: &str) -> eyre::Result<Config> {
@@ -64,7 +68,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_load_config() {
+    fn ci_test_load_config() {
         load("config.json").unwrap();
     }
 }
