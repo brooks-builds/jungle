@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Install Packages
-        run: sudo apt install libasound2-dev libudev-dev pkg-config
+        run: sudo apt-get install libasound2-dev libudev-dev pkg-config
       - uses: actions/cache@v2
         with:
           path: |
