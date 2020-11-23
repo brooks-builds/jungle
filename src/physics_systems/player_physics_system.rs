@@ -5,6 +5,8 @@ use super::PhysicsSystem;
 #[derive(PartialEq, Debug)]
 pub enum PlayerState {
     Standing,
+    RunningRight,
+    RunningLeft,
 }
 
 pub struct PlayerPhysicsSystem {
@@ -34,11 +36,19 @@ impl PhysicsSystem for PlayerPhysicsSystem {
         command: Option<crate::handle_input::Command>,
     ) {
         if let Some(command) = command {
-            if command == Command::MoveRight {
-                self.velocity += self.speed;
+            match command {
+                Command::MoveRight => self.state = PlayerState::RunningRight,
+                Command::StopMovingRight => self.state = PlayerState::Standing,
+                Command::StartGame => {}
+                Command::MoveLeft => self.state = PlayerState::RunningLeft,
+                Command::StopMovingLeft => self.state = PlayerState::Standing,
             }
-        } else {
-            self.velocity = 0.0;
+        }
+
+        match self.state {
+            PlayerState::RunningRight => self.velocity = self.speed,
+            PlayerState::Standing => self.velocity = 0.0,
+            PlayerState::RunningLeft => self.velocity = -self.speed,
         }
 
         location.x += self.velocity
@@ -94,8 +104,35 @@ mod test {
         let mut location = Point2::new(0.0, 0.0);
         let command = Command::MoveRight;
         player_physics_system.update(&mut location, Some(command));
-        player_physics_system.update(&mut location, None);
         assert_eq!(location.x, config.player_speed);
         assert_eq!(location.y, 0.0);
+        assert_eq!(player_physics_system.state, PlayerState::RunningRight);
+        player_physics_system.update(&mut location, None);
+        assert_eq!(location.x, config.player_speed * 2.0);
+        assert_eq!(location.y, 0.0);
+        player_physics_system.update(&mut location, Some(Command::StopMovingRight));
+        assert_eq!(location.x, config.player_speed * 2.0);
+        assert_eq!(location.y, 0.0);
+        assert_eq!(player_physics_system.state, PlayerState::Standing);
+    }
+
+    #[test]
+    #[allow(clippy::clippy::float_cmp)]
+    fn ci_test_player_moves_left() {
+        let config = config::load("config.json").unwrap();
+        let mut player_physics_system = PlayerPhysicsSystem::new(&config);
+        let mut location = Point2::new(0.0, 0.0);
+        player_physics_system.update(&mut location, Some(Command::MoveLeft));
+        assert_eq!(location.x, -config.player_speed);
+        assert_eq!(location.y, 0.0);
+        assert_eq!(player_physics_system.state, PlayerState::RunningLeft);
+        player_physics_system.update(&mut location, None);
+        assert_eq!(location.x, -config.player_speed * 2.0);
+        assert_eq!(location.y, 0.0);
+        assert_eq!(player_physics_system.state, PlayerState::RunningLeft);
+        player_physics_system.update(&mut location, Some(Command::StopMovingLeft));
+        assert_eq!(location.x, -config.player_speed * 2.0);
+        assert_eq!(location.y, 0.0);
+        assert_eq!(player_physics_system.state, PlayerState::Standing);
     }
 }

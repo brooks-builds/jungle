@@ -16,6 +16,8 @@ pub struct Config {
     pub start_button: Button,
     #[serde(with = "crate::config::serde_button")]
     pub move_right_button: Button,
+    #[serde(with = "crate::config::serde_button")]
+    pub move_left_button: Button,
     pub title: String,
     pub title_subtext: String,
     pub font_large: f32,
