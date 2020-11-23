@@ -6,6 +6,7 @@ use crate::{config::Config, scenes::ActiveScene};
 pub enum Command {
     StartGame,
     MoveRight,
+    StopMovingRight,
 }
 
 pub struct HandleInput {
@@ -37,7 +38,16 @@ impl HandleInput {
                 ggez::input::gamepad::gilrs::EventType::ButtonPressed(button, code) => {
                     self.button_to_command(button, current_scene)
                 }
-                ggez::input::gamepad::gilrs::EventType::ButtonReleased(button, _) => None,
+                ggez::input::gamepad::gilrs::EventType::ButtonReleased(button, _) => {
+                    if let Some(command) = self.button_to_command(button, current_scene) {
+                        match command {
+                            Command::MoveRight => Some(Command::StopMovingRight),
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    }
+                }
                 ggez::input::gamepad::gilrs::EventType::ButtonChanged(_, _, _) => None,
                 ggez::input::gamepad::gilrs::EventType::AxisChanged(_, _, _) => None,
                 ggez::input::gamepad::gilrs::EventType::Connected => None,

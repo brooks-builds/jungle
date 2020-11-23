@@ -59,6 +59,9 @@ impl EventHandler for GameState {
     fn update(&mut self, context: &mut Context) -> GameResult {
         while timer::check_update_time(context, 30) {
             let button_pressed = self.handle_input.run(&self.active_scene);
+            if let Some(command) = &button_pressed {
+                dbg!(command);
+            }
 
             match self.active_scene {
                 ActiveScene::Start => self.starting_scene.update(
