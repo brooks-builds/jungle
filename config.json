@@ -1,6 +1,8 @@
 {
+    "player_running_spritesheet_count": 5.0,
     "resolution_x": 1920,
     "resolution_y": 1080,
+    "spritesheet_animation_speed": 10,
     "start_button": "Start",
     "move_right_button": "DPadRight",
     "move_left_button": "DPadLeft",

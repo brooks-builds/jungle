@@ -36,9 +36,14 @@ impl GameObject {
         })
     }
 
-    pub fn draw(&self, context: &mut Context, config: &Config, images: &Images) -> GameResult {
+    pub fn draw(&mut self, context: &mut Context, config: &Config, images: &Images) -> GameResult {
+        let physics_state = if let Some(physics_system) = &self.physics_system {
+            Some(physics_system.get_state())
+        } else {
+            None
+        };
         self.draw_system
-            .draw(images, config, context, &self.location)
+            .draw(images, config, context, &self.location, physics_state)
     }
 
     pub fn update(&mut self, command: Option<Command>) {
@@ -61,7 +66,7 @@ mod test {
     fn ci_test_create_empty_game_object() {
         let config = config::load("config.json").unwrap();
         let location: Point2<f32> = Point2::new(10.0, 10.0);
-        let player_draw_system = PlayerDrawSystem::new();
+        let player_draw_system = PlayerDrawSystem::new(&config);
         let player_physics_system = PlayerPhysicsSystem::new(&config);
         let game_object: GameObject = GameObject::new(
             location,
@@ -75,8 +80,9 @@ mod test {
     #[test]
     fn test_draw_game_object() {
         let location: Point2<f32> = Point2::new(10.0, 10.0);
-        let player_draw_system = PlayerDrawSystem::new();
-        let game_object: GameObject =
+        let config = config::load("config.json").unwrap();
+        let player_draw_system = PlayerDrawSystem::new(&config);
+        let mut game_object: GameObject =
             GameObject::new(location, Box::new(player_draw_system), None).unwrap();
         let config = crate::config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
@@ -88,7 +94,7 @@ mod test {
     fn ci_test_update_game_object() {
         let config = crate::config::load("config.json").unwrap();
         let location: Point2<f32> = Point2::new(10.0, 10.0);
-        let player_draw_system = PlayerDrawSystem::new();
+        let player_draw_system = PlayerDrawSystem::new(&config);
         let mut physics_system = PlayerPhysicsSystem::new(&config);
         let mut player: GameObject = GameObject::new(
             location,

@@ -17,7 +17,7 @@ impl MainScene {
     pub fn new(config: &Config, _context: &mut Context, map: Map) -> GameResult<Self> {
         let player = GameObject::new(
             Point2::new(config.player_starting_x, config.player_starting_y),
-            Box::new(PlayerDrawSystem::new()),
+            Box::new(PlayerDrawSystem::new(config)),
             Some(Box::new(PlayerPhysicsSystem::new(config))),
         )?;
 
@@ -37,7 +37,7 @@ impl Scene for MainScene {
         Ok(())
     }
 
-    fn draw(&self, context: &mut Context, config: &Config, images: &Images) -> GameResult {
+    fn draw(&mut self, context: &mut Context, config: &Config, images: &Images) -> GameResult {
         self.map.draw(context, config)?;
         self.player.draw(context, config, images)?;
 
@@ -56,7 +56,7 @@ mod test {
         let config = crate::config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
         let map = Map::new(&config, context).unwrap();
-        let main_scene: MainScene = MainScene::new(&config, context, map).unwrap();
+        let mut main_scene: MainScene = MainScene::new(&config, context, map).unwrap();
         let images = Images::new(context, &config).unwrap();
 
         main_scene.draw(context, &config, &images).unwrap();

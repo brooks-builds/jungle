@@ -10,8 +10,10 @@ use self::map::ConfigMap;
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct Config {
+    pub player_running_spritesheet_count: f32,
     pub resolution_x: f32,
     pub resolution_y: f32,
+    pub spritesheet_animation_speed: u8,
     #[serde(with = "crate::config::serde_button")]
     pub start_button: Button,
     #[serde(with = "crate::config::serde_button")]
