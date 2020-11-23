@@ -1,11 +1,10 @@
 use ggez::{
-    event::Button,
     graphics::DrawParam,
     graphics::{self, Font, Scale, Text},
     Context, GameResult,
 };
 
-use crate::{config::Config, images::Images};
+use crate::{config::Config, handle_input::Command, images::Images};
 
 use super::Scene;
 
@@ -27,14 +26,14 @@ impl Scene for PauseScene {
     fn update(
         &mut self,
         _context: &mut Context,
-        _button_pressed: Option<Button>,
+        _button_pressed: Option<Command>,
         _config: &Config,
         _active_scene: &mut super::ActiveScene,
     ) -> GameResult {
         Ok(())
     }
 
-    fn draw(&self, context: &mut Context, _config: &Config, _images: &Images) -> GameResult {
+    fn draw(&mut self, context: &mut Context, _config: &Config, _images: &Images) -> GameResult {
         graphics::draw(context, &self.text, DrawParam::new())
     }
 }

@@ -1,6 +1,6 @@
-use ggez::{event::Button, Context, GameResult};
+use ggez::{Context, GameResult};
 
-use crate::{config::Config, images::Images};
+use crate::{config::Config, handle_input::Command, images::Images};
 
 pub mod end_scene;
 pub mod main_scene;
@@ -31,10 +31,10 @@ pub trait Scene {
     fn update(
         &mut self,
         context: &mut Context,
-        button_pressed: Option<Button>,
+        button_pressed: Option<Command>,
         config: &Config,
         active_scene: &mut ActiveScene,
     ) -> GameResult;
 
-    fn draw(&self, context: &mut Context, config: &Config, images: &Images) -> GameResult;
+    fn draw(&mut self, context: &mut Context, config: &Config, images: &Images) -> GameResult;
 }

@@ -1,7 +1,11 @@
 {
+    "player_running_spritesheet_count": 5.0,
     "resolution_x": 1920,
     "resolution_y": 1080,
+    "spritesheet_animation_speed": 10,
     "start_button": "Start",
+    "move_right_button": "DPadRight",
+    "move_left_button": "DPadLeft",
     "title": "Jungle",
     "title_subtext": "Press start to begin",
     "font_large": 72.0,
@@ -42,5 +46,6 @@
     "player_standing_image": "/jungle_player_standing.png",
     "player_running_spritesheet": "/jungle_player_running-Sheet.png",
     "player_starting_x": 150.0,
-    "player_starting_y": 600.0
+    "player_starting_y": 600.0,
+    "player_speed": 10.0
 }

@@ -1,15 +1,18 @@
 pub mod config;
 mod draw_systems;
 mod game_objects;
+mod handle_input;
 mod images;
 pub mod initialize;
 mod map;
+mod physics_systems;
 mod scenes;
 
 use config::Config;
-use ggez::{event::EventHandler, input::gamepad::Gilrs};
+use ggez::event::EventHandler;
 use ggez::{graphics, Context, GameResult};
 use ggez::{graphics::BLACK, timer};
+use handle_input::HandleInput;
 use images::Images;
 use map::Map;
 use scenes::{
@@ -23,20 +26,20 @@ pub struct GameState {
     main_scene: MainScene,
     pause_scene: PauseScene,
     end_scene: EndScene,
-    gamepad: Gilrs,
+    handle_input: HandleInput,
     config: Config,
     images: Images,
 }
 
 impl GameState {
     pub fn new(config: Config, context: &mut Context) -> GameResult<Self> {
-        let active_scene = ActiveScene::Main;
+        let active_scene = ActiveScene::Start;
         let starting_scene = StartScene::new(&config, context);
         let map = Map::new(&config, context)?;
         let main_scene = MainScene::new(&config, context, map)?;
         let pause_scene = PauseScene::new();
         let end_scene = EndScene::new();
-        let gamepad = Gilrs::new()?;
+        let handle_input = HandleInput::new(&config)?;
         let images = Images::new(context, &config)?;
 
         Ok(Self {
@@ -45,7 +48,7 @@ impl GameState {
             main_scene,
             pause_scene,
             end_scene,
-            gamepad,
+            handle_input,
             config,
             images,
         })
@@ -55,16 +58,7 @@ impl GameState {
 impl EventHandler for GameState {
     fn update(&mut self, context: &mut Context) -> GameResult {
         while timer::check_update_time(context, 30) {
-            let button_pressed = if let Some(gamepad_event) = self.gamepad.next_event() {
-                match gamepad_event.event {
-                    ggez::input::gamepad::gilrs::EventType::ButtonPressed(button, _code) => {
-                        Some(button)
-                    }
-                    _ => None,
-                }
-            } else {
-                None
-            };
+            let button_pressed = self.handle_input.run(&self.active_scene);
 
             match self.active_scene {
                 ActiveScene::Start => self.starting_scene.update(

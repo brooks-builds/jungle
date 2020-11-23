@@ -10,10 +10,16 @@ use self::map::ConfigMap;
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct Config {
+    pub player_running_spritesheet_count: f32,
     pub resolution_x: f32,
     pub resolution_y: f32,
+    pub spritesheet_animation_speed: u8,
     #[serde(with = "crate::config::serde_button")]
     pub start_button: Button,
+    #[serde(with = "crate::config::serde_button")]
+    pub move_right_button: Button,
+    #[serde(with = "crate::config::serde_button")]
+    pub move_left_button: Button,
     pub title: String,
     pub title_subtext: String,
     pub font_large: f32,
@@ -55,6 +61,7 @@ pub struct Config {
     pub player_running_spritesheet: String,
     pub player_starting_x: f32,
     pub player_starting_y: f32,
+    pub player_speed: f32,
 }
 
 pub fn load(file_name: &str) -> eyre::Result<Config> {
