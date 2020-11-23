@@ -9,7 +9,7 @@ mod physics_systems;
 mod scenes;
 
 use config::Config;
-use ggez::{event::EventHandler, input::gamepad::Gilrs};
+use ggez::event::EventHandler;
 use ggez::{graphics, Context, GameResult};
 use ggez::{graphics::BLACK, timer};
 use handle_input::HandleInput;

@@ -33,9 +33,9 @@ pub struct HandleInput {
 impl HandleInput {
     pub fn new(config: &Config) -> GameResult<Self> {
         let gamepad = Gilrs::new()?;
-        let start_button = config.start_button.clone();
-        let move_right = config.move_right_button.clone();
-        let move_left = config.move_left_button.clone();
+        let start_button = config.start_button;
+        let move_right = config.move_right_button;
+        let move_left = config.move_left_button;
 
         Ok(Self {
             gamepad,
@@ -48,11 +48,11 @@ impl HandleInput {
     pub fn run(&mut self, current_scene: &ActiveScene) -> Option<Command> {
         if let Some(gamepad_event) = self.gamepad.next_event() {
             match gamepad_event.event {
-                ggez::input::gamepad::gilrs::EventType::ButtonRepeated(button, code) => {
+                ggez::input::gamepad::gilrs::EventType::ButtonRepeated(button, _code) => {
                     dbg!("hello", button);
                     None
                 }
-                ggez::input::gamepad::gilrs::EventType::ButtonPressed(button, code) => {
+                ggez::input::gamepad::gilrs::EventType::ButtonPressed(button, _code) => {
                     self.button_to_command(button, current_scene)
                 }
                 ggez::input::gamepad::gilrs::EventType::ButtonReleased(button, _) => {

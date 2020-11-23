@@ -48,7 +48,7 @@ impl PhysicsSystem for PlayerPhysicsSystem {
     }
 
     fn get_state(&self) -> super::PhysicsState {
-        self.state.clone()
+        self.state
     }
 }
 

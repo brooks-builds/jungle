@@ -1,10 +1,6 @@
 use ggez::{nalgebra::Point2, Context, GameResult};
 
-use crate::{
-    config::Config,
-    images::Images,
-    physics_systems::{PhysicsState, PhysicsSystem},
-};
+use crate::{config::Config, images::Images, physics_systems::PhysicsState};
 
 pub mod player_draw_system;
 

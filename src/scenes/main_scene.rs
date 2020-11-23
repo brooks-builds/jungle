@@ -1,4 +1,4 @@
-use ggez::{event::Button, nalgebra::Point2, Context, GameResult};
+use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::{
     config::Config, draw_systems::player_draw_system::PlayerDrawSystem, game_objects::GameObject,

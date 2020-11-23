@@ -1,5 +1,4 @@
 use ggez::{
-    event::Button,
     graphics::DrawParam,
     graphics::{self, Font, Scale, Text},
     Context, GameResult,

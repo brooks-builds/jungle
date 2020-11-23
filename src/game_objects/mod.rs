@@ -95,7 +95,7 @@ mod test {
         let config = crate::config::load("config.json").unwrap();
         let location: Point2<f32> = Point2::new(10.0, 10.0);
         let player_draw_system = PlayerDrawSystem::new(&config);
-        let mut physics_system = PlayerPhysicsSystem::new(&config);
+        let physics_system = PlayerPhysicsSystem::new(&config);
         let mut player: GameObject = GameObject::new(
             location,
             Box::new(player_draw_system),

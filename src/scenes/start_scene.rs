@@ -1,5 +1,4 @@
 use ggez::{
-    event::Button,
     graphics::DrawParam,
     graphics::{self, Font, Scale, Text},
     nalgebra::Point2,
@@ -48,7 +47,7 @@ impl Scene for StartScene {
         &mut self,
         _context: &mut Context,
         command: Option<Command>,
-        config: &Config,
+        _config: &Config,
         active_scene: &mut super::ActiveScene,
     ) -> GameResult {
         if let Some(command) = command {

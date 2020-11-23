@@ -1,4 +1,4 @@
-use ggez::{event::Button, Context, GameResult};
+use ggez::{Context, GameResult};
 
 use crate::{config::Config, handle_input::Command, images::Images};
 
