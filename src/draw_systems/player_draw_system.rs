@@ -1,9 +1,10 @@
 use ggez::{
     graphics::Rect,
-    graphics::{self, DrawParam},
+    graphics::{self, Color, DrawMode, DrawParam},
     nalgebra::Point2,
     Context, GameResult,
 };
+use graphics::MeshBuilder;
 
 use crate::{config::Config, images::Images, physics_systems::PhysicsState};
 
@@ -50,7 +51,10 @@ impl DrawSystem for PlayerDrawSystem {
         physics_state: Option<PhysicsState>,
     ) -> GameResult {
         let mut image = &images.standing_player;
-        let mut draw_param = DrawParam::new().dest([location.x, location.y]);
+        let mut draw_param = DrawParam::new().dest([
+            location.x - config.player_standing_image_width / 2.0,
+            location.y - config.player_standing_image_height / 2.0,
+        ]);
 
         if let Some(state) = physics_state {
             match state {
@@ -71,7 +75,32 @@ impl DrawSystem for PlayerDrawSystem {
             }
         }
 
-        graphics::draw(context, image, draw_param)
+        graphics::draw(context, image, draw_param)?;
+        let border = MeshBuilder::new()
+            .rectangle(
+                ggez::graphics::DrawMode::stroke(1.0),
+                Rect::new(
+                    location.x - config.player_width / 2.0,
+                    location.y - config.player_height / 2.0,
+                    config.player_width,
+                    config.player_height,
+                ),
+                ggez::graphics::Color::new(1.0, 0.0, 0.0, 1.0),
+            )
+            .build(context)?;
+        graphics::draw(context, &border, DrawParam::new())?;
+        let center_dot = MeshBuilder::new()
+            .circle(
+                DrawMode::fill(),
+                Point2::new(location.x, location.y),
+                5.0,
+                0.1,
+                Color::new(1.0, 0.0, 0.0, 1.0),
+            )
+            .build(context)?;
+        graphics::draw(context, &center_dot, DrawParam::new())?;
+
+        Ok(())
     }
 }
 
