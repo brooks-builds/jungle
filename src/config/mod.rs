@@ -10,7 +10,11 @@ use self::map::ConfigMap;
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct Config {
+    pub player_height: f32,
     pub player_running_spritesheet_count: f32,
+    pub player_standing_image_height: f32,
+    pub player_standing_image_width: f32,
+    pub player_width: f32,
     pub resolution_x: f32,
     pub resolution_y: f32,
     pub spritesheet_animation_speed: u8,

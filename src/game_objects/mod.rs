@@ -18,9 +18,10 @@ pub trait StaticGameObject {
 }
 
 pub struct GameObject {
-    location: Point2<f32>,
+    pub location: Point2<f32>,
     draw_system: Box<dyn DrawSystem>,
     physics_system: Option<Box<dyn PhysicsSystem>>,
+    pub width: f32,
 }
 
 impl GameObject {
@@ -28,11 +29,13 @@ impl GameObject {
         location: Point2<f32>,
         draw_system: Box<dyn DrawSystem>,
         physics_system: Option<Box<dyn PhysicsSystem>>,
+        width: f32,
     ) -> GameResult<Self> {
         Ok(Self {
             location,
             draw_system,
             physics_system,
+            width,
         })
     }
 
@@ -63,18 +66,22 @@ mod test {
     use super::*;
 
     #[test]
+    #[allow(clippy::clippy::float_cmp)]
     fn ci_test_create_empty_game_object() {
         let config = config::load("config.json").unwrap();
         let location: Point2<f32> = Point2::new(10.0, 10.0);
         let player_draw_system = PlayerDrawSystem::new(&config);
         let player_physics_system = PlayerPhysicsSystem::new(&config);
+        let width = 50.0;
         let game_object: GameObject = GameObject::new(
             location,
             Box::new(player_draw_system),
             Some(Box::new(player_physics_system)),
+            width,
         )
         .unwrap();
         assert_eq!(game_object.location, location);
+        assert_eq!(game_object.width, width);
     }
 
     #[test]
@@ -83,7 +90,7 @@ mod test {
         let config = config::load("config.json").unwrap();
         let player_draw_system = PlayerDrawSystem::new(&config);
         let mut game_object: GameObject =
-            GameObject::new(location, Box::new(player_draw_system), None).unwrap();
+            GameObject::new(location, Box::new(player_draw_system), None, 10.0).unwrap();
         let config = crate::config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
         let images = Images::new(context, &config).unwrap();
@@ -100,6 +107,7 @@ mod test {
             location,
             Box::new(player_draw_system),
             Some(Box::new(physics_system)),
+            10.0,
         )
         .unwrap();
         let command = Command::MoveRight;
