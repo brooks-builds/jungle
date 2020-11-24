@@ -1,5 +1,7 @@
 {
+    "life_image": "/heart.png",
     "player_height": 160.0,
+    "player_lives": 7,
     "player_running_spritesheet_count": 5.0,
     "player_standing_image": "/jungle_player_standing.png",
     "player_standing_image_height": 160.0,

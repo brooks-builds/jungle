@@ -2,7 +2,8 @@ use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::{
     config::Config, draw_systems::player_draw_system::PlayerDrawSystem, game_objects::GameObject,
-    handle_input::Command, images::Images, map::Map,
+    game_objects::GameObjectBuilder, handle_input::Command, images::Images,
+    life_systems::player_life_system::PlayerLifeSystem, map::Map,
     physics_systems::player_physics_system::PlayerPhysicsSystem,
 };
 
@@ -15,12 +16,20 @@ pub struct MainScene {
 
 impl MainScene {
     pub fn new(config: &Config, _context: &mut Context, map: Map) -> GameResult<Self> {
-        let player = GameObject::new(
-            Point2::new(config.player_starting_x, config.player_starting_y),
-            Box::new(PlayerDrawSystem::new(config)),
-            Some(Box::new(PlayerPhysicsSystem::new(config))),
-            config.player_width,
-        )?;
+        let player = match GameObjectBuilder::new()
+            .location(Point2::new(
+                config.player_starting_x,
+                config.player_starting_y,
+            ))
+            .width(config.player_width)
+            .draw_system(Box::new(PlayerDrawSystem::new(config)))
+            .life_system(Box::new(PlayerLifeSystem::new(config.player_lives)))
+            .physics_system(Box::new(PlayerPhysicsSystem::new(config)))
+            .build()
+        {
+            Ok(game_object) => game_object,
+            Err(error) => panic!(error),
+        };
 
         Ok(MainScene { map, player })
     }

@@ -6,7 +6,9 @@ use ggez::{
 };
 use graphics::MeshBuilder;
 
-use crate::{config::Config, images::Images, physics_systems::PhysicsState};
+use crate::{
+    config::Config, images::Images, life_systems::LifeSystem, physics_systems::PhysicsState,
+};
 
 use super::DrawSystem;
 
@@ -49,6 +51,7 @@ impl DrawSystem for PlayerDrawSystem {
         context: &mut Context,
         location: &Point2<f32>,
         physics_state: Option<PhysicsState>,
+        life_system: &Option<Box<dyn LifeSystem>>,
     ) -> GameResult {
         let mut image = &images.standing_player;
         let mut draw_param = DrawParam::new().dest([
@@ -72,6 +75,18 @@ impl DrawSystem for PlayerDrawSystem {
                         .offset(Point2::new(1.0, 0.0))
                         .scale([-1.0, 1.0]);
                 }
+            }
+        }
+
+        if let Some(life_system) = life_system {
+            let width = images.life.width() as f32;
+            for count in 0..life_system.get_lives() {
+                graphics::draw(
+                    context,
+                    &images.life,
+                    DrawParam::new()
+                        .dest([config.resolution_x - width - count as f32 * width, 0.0]),
+                )?;
             }
         }
 
@@ -99,7 +114,6 @@ impl DrawSystem for PlayerDrawSystem {
             )
             .build(context)?;
         graphics::draw(context, &center_dot, DrawParam::new())?;
-
         Ok(())
     }
 }
@@ -210,7 +224,7 @@ mod test {
         let images = Images::new(context, &config).unwrap();
         let location = Point2::new(0.0, 0.0);
         player_draw_system
-            .draw(&images, &config, context, &location, Some(state))
+            .draw(&images, &config, context, &location, Some(state), &None)
             .unwrap();
     }
 }
