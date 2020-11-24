@@ -10,7 +10,7 @@ use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::{
     config::Config, draw_systems::DrawSystem, handle_input::Command, images::Images,
-    physics_systems::PhysicsSystem,
+    life_systems::LifeSystem, physics_systems::PhysicsSystem,
 };
 
 pub trait StaticGameObject {
@@ -19,34 +19,27 @@ pub trait StaticGameObject {
 
 pub struct GameObject {
     pub location: Point2<f32>,
-    draw_system: Box<dyn DrawSystem>,
-    physics_system: Option<Box<dyn PhysicsSystem>>,
     pub width: f32,
+    draw_system: Box<dyn DrawSystem>,
+    life_system: Option<Box<dyn LifeSystem>>,
+    physics_system: Option<Box<dyn PhysicsSystem>>,
 }
 
 impl GameObject {
-    pub fn new(
-        location: Point2<f32>,
-        draw_system: Box<dyn DrawSystem>,
-        physics_system: Option<Box<dyn PhysicsSystem>>,
-        width: f32,
-    ) -> GameResult<Self> {
-        Ok(Self {
-            location,
-            draw_system,
-            physics_system,
-            width,
-        })
-    }
-
     pub fn draw(&mut self, context: &mut Context, config: &Config, images: &Images) -> GameResult {
         let physics_state = if let Some(physics_system) = &self.physics_system {
             Some(physics_system.get_state())
         } else {
             None
         };
-        self.draw_system
-            .draw(images, config, context, &self.location, physics_state)
+        self.draw_system.draw(
+            images,
+            config,
+            context,
+            &self.location,
+            physics_state,
+            &self.life_system,
+        )
     }
 
     pub fn update(&mut self, command: Option<Command>) {
@@ -56,61 +49,97 @@ impl GameObject {
     }
 }
 
+#[derive(thiserror::Error, Debug)]
+pub enum GameObjectBuilderError {}
+
+pub struct GameObjectBuilder {
+    location: Point2<f32>,
+    width: f32,
+    draw_system: Option<Box<dyn DrawSystem>>,
+    life_system: Option<Box<dyn LifeSystem>>,
+    physics_system: Option<Box<dyn PhysicsSystem>>,
+}
+
+impl GameObjectBuilder {
+    pub fn new() -> Self {
+        Self {
+            location: Point2::new(0.0, 0.0),
+            width: 0.0,
+            draw_system: None,
+            life_system: None,
+            physics_system: None,
+        }
+    }
+
+    pub fn location(mut self, location: Point2<f32>) -> Self {
+        self.location = location;
+        self
+    }
+
+    pub fn width(mut self, width: f32) -> Self {
+        self.width = width;
+        self
+    }
+
+    pub fn draw_system(mut self, draw_system: Box<dyn DrawSystem>) -> Self {
+        self.draw_system = Some(draw_system);
+        self
+    }
+
+    pub fn life_system(mut self, life_system: Box<dyn LifeSystem>) -> Self {
+        self.life_system = Some(life_system);
+        self
+    }
+
+    pub fn physics_system(mut self, physics_system: Box<dyn PhysicsSystem>) -> Self {
+        self.physics_system = Some(physics_system);
+        self
+    }
+
+    pub fn build(self) -> Result<GameObject, GameObjectBuilderError> {
+        Ok(GameObject {
+            location: self.location,
+            width: self.width,
+            draw_system: self.draw_system.unwrap(),
+            life_system: self.life_system,
+            physics_system: self.physics_system,
+        })
+    }
+}
+
 #[cfg(test)]
 mod test {
     use ggez::nalgebra::Point2;
 
-    use crate::{config, physics_systems::player_physics_system::PlayerPhysicsSystem};
-    use crate::{draw_systems::player_draw_system::PlayerDrawSystem, images::Images, initialize};
+    use crate::draw_systems::player_draw_system::PlayerDrawSystem;
+    use crate::{
+        config, life_systems::player_life_system::PlayerLifeSystem,
+        physics_systems::player_physics_system::PlayerPhysicsSystem,
+    };
 
     use super::*;
 
     #[test]
-    #[allow(clippy::clippy::float_cmp)]
-    fn ci_test_create_empty_game_object() {
+    #[allow(clippy::float_cmp)]
+    fn ci_test_use_builder_to_create_player_game_object() {
+        let x = 50.0;
+        let y = 55.0;
+        let width = 100.0;
+        let lives = 3;
         let config = config::load("config.json").unwrap();
-        let location: Point2<f32> = Point2::new(10.0, 10.0);
-        let player_draw_system = PlayerDrawSystem::new(&config);
-        let player_physics_system = PlayerPhysicsSystem::new(&config);
-        let width = 50.0;
-        let game_object: GameObject = GameObject::new(
-            location,
-            Box::new(player_draw_system),
-            Some(Box::new(player_physics_system)),
-            width,
-        )
-        .unwrap();
-        assert_eq!(game_object.location, location);
-        assert_eq!(game_object.width, width);
-    }
+        let player: GameObject = GameObjectBuilder::new()
+            .location(Point2::new(x, y))
+            .width(width)
+            .draw_system(Box::new(PlayerDrawSystem::new(&config)))
+            .life_system(Box::new(PlayerLifeSystem::new(lives)))
+            .physics_system(Box::new(PlayerPhysicsSystem::new(&config)))
+            .build()
+            .unwrap();
 
-    #[test]
-    fn test_draw_game_object() {
-        let location: Point2<f32> = Point2::new(10.0, 10.0);
-        let config = config::load("config.json").unwrap();
-        let player_draw_system = PlayerDrawSystem::new(&config);
-        let mut game_object: GameObject =
-            GameObject::new(location, Box::new(player_draw_system), None, 10.0).unwrap();
-        let config = crate::config::load("config.json").unwrap();
-        let (context, _) = &mut initialize::initialize(&config).unwrap();
-        let images = Images::new(context, &config).unwrap();
-        game_object.draw(context, &config, &images).unwrap();
-    }
-
-    #[test]
-    fn ci_test_update_game_object() {
-        let config = crate::config::load("config.json").unwrap();
-        let location: Point2<f32> = Point2::new(10.0, 10.0);
-        let player_draw_system = PlayerDrawSystem::new(&config);
-        let physics_system = PlayerPhysicsSystem::new(&config);
-        let mut player: GameObject = GameObject::new(
-            location,
-            Box::new(player_draw_system),
-            Some(Box::new(physics_system)),
-            10.0,
-        )
-        .unwrap();
-        let command = Command::MoveRight;
-        player.update(Some(command));
+        assert_eq!(player.location.x, x);
+        assert_eq!(player.location.y, y);
+        assert_eq!(player.width, width);
+        player.life_system.unwrap();
+        player.physics_system.unwrap();
     }
 }

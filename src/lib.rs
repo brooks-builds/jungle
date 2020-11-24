@@ -4,6 +4,7 @@ mod game_objects;
 mod handle_input;
 mod images;
 pub mod initialize;
+mod life_systems;
 mod map;
 mod physics_systems;
 mod scenes;
