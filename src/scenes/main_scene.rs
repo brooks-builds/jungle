@@ -1,5 +1,8 @@
+use std::collections::HashMap;
+
 use ggez::{nalgebra::Point2, Context, GameResult};
 
+use crate::game_objects::GameObjectTypes;
 use crate::{
     config::Config, draw_systems::player_draw_system::PlayerDrawSystem, game_objects::GameObject,
     game_objects::GameObjectBuilder, handle_input::Command, images::Images,
@@ -11,11 +14,12 @@ use super::Scene;
 
 pub struct MainScene {
     map: Map,
-    player: GameObject,
+    game_objects: HashMap<GameObjectTypes, GameObject>,
 }
 
 impl MainScene {
     pub fn new(config: &Config, _context: &mut Context, map: Map) -> GameResult<Self> {
+        let mut game_objects = HashMap::new();
         let player = match GameObjectBuilder::new()
             .location(Point2::new(
                 config.player_starting_x,
@@ -25,21 +29,26 @@ impl MainScene {
             .draw_system(Box::new(PlayerDrawSystem::new(config)))
             .life_system(Box::new(PlayerLifeSystem::new(config.player_lives)))
             .physics_system(Box::new(PlayerPhysicsSystem::new(config)))
+            .as_type(GameObjectTypes::Player)
             .build()
         {
             Ok(game_object) => game_object,
             Err(error) => panic!(error),
         };
 
-        Ok(MainScene { map, player })
+        game_objects.insert(GameObjectTypes::Player, player);
+
+        // create the heart game object and add it to the game objects vector
+
+        Ok(MainScene { map, game_objects })
     }
 
-    fn is_player_off_screen_right(&self, config: &Config) -> bool {
-        self.player.location.x >= config.resolution_x
+    fn is_player_off_screen_right(&self, config: &Config, player: &GameObject) -> bool {
+        player.location.x >= config.resolution_x
     }
 
-    fn is_player_off_screen_left(&self) -> bool {
-        self.player.location.x + self.player.width <= 0.0
+    fn is_player_off_screen_left(&self, player: &GameObject) -> bool {
+        player.location.x + player.width <= 0.0
     }
 }
 
@@ -51,14 +60,21 @@ impl Scene for MainScene {
         config: &Config,
         _active_scene: &mut super::ActiveScene,
     ) -> GameResult {
-        self.player.update(command);
+        self.game_objects
+            .iter_mut()
+            .for_each(|(_, game_object)| game_object.update(command));
 
-        if self.is_player_off_screen_right(config) {
+        let player = self
+            .game_objects
+            .get_mut(&GameObjectTypes::Player)
+            .expect("Could not find player");
+
+        if player.is_offscreen_right(config.resolution_x) {
             self.map.move_right(&config, context)?;
-            self.player.location.x = 0.0;
-        } else if self.is_player_off_screen_left() {
+            player.location.x = 0.0;
+        } else if player.is_offscreen_left() {
             self.map.move_left(&config, context)?;
-            self.player.location.x = config.resolution_x - config.player_width;
+            player.location.x = config.resolution_x - config.player_width;
         }
 
         Ok(())
@@ -66,15 +82,15 @@ impl Scene for MainScene {
 
     fn draw(&mut self, context: &mut Context, config: &Config, images: &Images) -> GameResult {
         self.map.draw(context, config)?;
-        self.player.draw(context, config, images)?;
-
-        Ok(())
+        self.game_objects
+            .iter_mut()
+            .try_for_each(|(_, game_object)| game_object.draw(context, config, images))
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{config::load, images::Images, initialize};
+    use crate::{images::Images, initialize};
 
     use super::*;
 
@@ -87,47 +103,5 @@ mod test {
         let images = Images::new(context, &config).unwrap();
 
         main_scene.draw(context, &config, &images).unwrap();
-    }
-
-    #[test]
-    fn test_player_moving_off_screen_right() {
-        let config = load("config.json").unwrap();
-        let (context, _) = &mut initialize::initialize(&config).unwrap();
-        let map = Map::new(&config, context).unwrap();
-        let mut main_scene = MainScene::new(&config, context, map).unwrap();
-        main_scene.player.location.x = config.resolution_x;
-
-        assert_eq!(main_scene.is_player_off_screen_right(&config), true);
-    }
-
-    #[test]
-    fn test_player_moving_off_screen_left() {
-        let config = load("config.json").unwrap();
-        let (context, _) = &mut initialize::initialize(&config).unwrap();
-        let map = Map::new(&config, context).unwrap();
-        let mut main_scene = MainScene::new(&config, context, map).unwrap();
-        main_scene.player.location.x = -config.player_width;
-
-        assert_eq!(main_scene.is_player_off_screen_left(), true);
-    }
-
-    #[test]
-    fn test_player_not_moving_off_screen_right() {
-        let config = load("config.json").unwrap();
-        let (context, _) = &mut initialize::initialize(&config).unwrap();
-        let map = Map::new(&config, context).unwrap();
-        let main_scene = MainScene::new(&config, context, map).unwrap();
-
-        assert_eq!(main_scene.is_player_off_screen_right(&config), false);
-    }
-
-    #[test]
-    fn test_player_not_moving_off_screen_left() {
-        let config = load("config.json").unwrap();
-        let (context, _) = &mut initialize::initialize(&config).unwrap();
-        let map = Map::new(&config, context).unwrap();
-        let main_scene = MainScene::new(&config, context, map).unwrap();
-
-        assert_eq!(main_scene.is_player_off_screen_left(), false);
     }
 }
