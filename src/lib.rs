@@ -37,11 +37,11 @@ impl GameState {
         let active_scene = ActiveScene::Start;
         let starting_scene = StartScene::new(&config, context);
         let map = Map::new(&config, context)?;
-        let main_scene = MainScene::new(&config, context, map)?;
+        let mut images = Images::new(context, &config)?;
+        let main_scene = MainScene::new(&config, context, map, &mut images)?;
         let pause_scene = PauseScene::new();
         let end_scene = EndScene::new();
         let handle_input = HandleInput::new(&config)?;
-        let images = Images::new(context, &config)?;
 
         Ok(Self {
             active_scene,
@@ -96,12 +96,19 @@ impl EventHandler for GameState {
         graphics::clear(context, BLACK);
 
         match self.active_scene {
-            ActiveScene::Start => self
-                .starting_scene
-                .draw(context, &self.config, &self.images)?,
-            ActiveScene::Main => self.main_scene.draw(context, &self.config, &self.images)?,
-            ActiveScene::Pause => self.pause_scene.draw(context, &self.config, &self.images)?,
-            ActiveScene::End => self.end_scene.draw(context, &self.config, &self.images)?,
+            ActiveScene::Start => {
+                self.starting_scene
+                    .draw(context, &self.config, &mut self.images)?
+            }
+            ActiveScene::Main => self
+                .main_scene
+                .draw(context, &self.config, &mut self.images)?,
+            ActiveScene::Pause => self
+                .pause_scene
+                .draw(context, &self.config, &mut self.images)?,
+            ActiveScene::End => self
+                .end_scene
+                .draw(context, &self.config, &mut self.images)?,
         }
 
         graphics::present(context)

@@ -11,6 +11,7 @@ use self::map::ConfigMap;
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct Config {
     pub life_image: String,
+    pub life_width: f32,
     pub player_height: f32,
     pub player_lives: u8,
     pub player_running_spritesheet_count: f32,

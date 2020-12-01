@@ -1,3 +1,4 @@
+use ggez::graphics::spritebatch::SpriteBatch;
 use ggez::{graphics::Image, Context, GameResult};
 
 use crate::config::Config;
@@ -6,6 +7,7 @@ pub struct Images {
     pub standing_player: Image,
     pub running_player: Image,
     pub life: Image,
+    pub heart_spritebatch: SpriteBatch,
 }
 
 impl Images {
@@ -13,11 +15,13 @@ impl Images {
         let standing_player = Image::new(context, &config.player_standing_image)?;
         let running_player = Image::new(context, &config.player_running_spritesheet)?;
         let life = Image::new(context, &config.life_image)?;
+        let heart_spritebatch = SpriteBatch::new(life.clone());
 
         Ok(Images {
             standing_player,
             running_player,
             life,
+            heart_spritebatch,
         })
     }
 }

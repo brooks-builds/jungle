@@ -32,7 +32,12 @@ pub struct GameObject {
 }
 
 impl GameObject {
-    pub fn draw(&mut self, context: &mut Context, config: &Config, images: &Images) -> GameResult {
+    pub fn draw(
+        &mut self,
+        context: &mut Context,
+        config: &Config,
+        images: &mut Images,
+    ) -> GameResult {
         let physics_state = if let Some(physics_system) = &self.physics_system {
             Some(physics_system.get_state())
         } else {
@@ -90,10 +95,6 @@ impl GameObjectBuilder {
         }
     }
 
-    pub fn as_type(mut self, new_type: GameObjectTypes) -> Self {
-        self
-    }
-
     pub fn location(mut self, location: Point2<f32>) -> Self {
         self.location = location;
         self
@@ -134,7 +135,6 @@ impl GameObjectBuilder {
 mod test {
     use ggez::nalgebra::Point2;
 
-    use crate::draw_systems::hearts_draw_system::HeartDrawSystem;
     use crate::draw_systems::player_draw_system::PlayerDrawSystem;
     use crate::{
         config, life_systems::player_life_system::PlayerLifeSystem,

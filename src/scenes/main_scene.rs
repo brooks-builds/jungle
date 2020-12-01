@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use ggez::{nalgebra::Point2, Context, GameResult};
 
+use crate::draw_systems::hearts_draw_system::HeartDrawSystem;
 use crate::game_objects::GameObjectTypes;
 use crate::{
     config::Config, draw_systems::player_draw_system::PlayerDrawSystem, game_objects::GameObject,
@@ -18,7 +19,12 @@ pub struct MainScene {
 }
 
 impl MainScene {
-    pub fn new(config: &Config, _context: &mut Context, map: Map) -> GameResult<Self> {
+    pub fn new(
+        config: &Config,
+        _context: &mut Context,
+        map: Map,
+        images: &mut Images,
+    ) -> GameResult<Self> {
         let mut game_objects = HashMap::new();
         let player = match GameObjectBuilder::new()
             .location(Point2::new(
@@ -29,26 +35,39 @@ impl MainScene {
             .draw_system(Box::new(PlayerDrawSystem::new(config)))
             .life_system(Box::new(PlayerLifeSystem::new(config.player_lives)))
             .physics_system(Box::new(PlayerPhysicsSystem::new(config)))
-            .as_type(GameObjectTypes::Player)
             .build()
         {
             Ok(game_object) => game_object,
             Err(error) => panic!(error),
         };
+        let hearts = match GameObjectBuilder::new()
+            .location(Point2::new(
+                config.resolution_x - config.life_width * 3.0,
+                0.0,
+            ))
+            .width(config.life_width)
+            .draw_system(Box::new(
+                HeartDrawSystem::new(images.life.clone())
+                    .set_lives(config.player_lives)
+                    .set_location(
+                        config.resolution_x - config.life_width * config.player_lives as f32,
+                        0.0,
+                    )
+                    .set_width(config.life_width)
+                    .build(),
+            ))
+            .build()
+        {
+            Ok(heart) => heart,
+            Err(error) => panic!(error),
+        };
 
         game_objects.insert(GameObjectTypes::Player, player);
+        game_objects.insert(GameObjectTypes::Heart, hearts);
 
         // create the heart game object and add it to the game objects vector
 
         Ok(MainScene { map, game_objects })
-    }
-
-    fn is_player_off_screen_right(&self, config: &Config, player: &GameObject) -> bool {
-        player.location.x >= config.resolution_x
-    }
-
-    fn is_player_off_screen_left(&self, player: &GameObject) -> bool {
-        player.location.x + player.width <= 0.0
     }
 }
 
@@ -80,7 +99,7 @@ impl Scene for MainScene {
         Ok(())
     }
 
-    fn draw(&mut self, context: &mut Context, config: &Config, images: &Images) -> GameResult {
+    fn draw(&mut self, context: &mut Context, config: &Config, images: &mut Images) -> GameResult {
         self.map.draw(context, config)?;
         self.game_objects
             .iter_mut()
@@ -99,9 +118,10 @@ mod test {
         let config = crate::config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
         let map = Map::new(&config, context).unwrap();
-        let mut main_scene: MainScene = MainScene::new(&config, context, map).unwrap();
-        let images = Images::new(context, &config).unwrap();
+        let mut images = Images::new(context, &config).unwrap();
+        let mut main_scene: MainScene = MainScene::new(&config, context, map, &mut images).unwrap();
+        let mut images = Images::new(context, &config).unwrap();
 
-        main_scene.draw(context, &config, &images).unwrap();
+        main_scene.draw(context, &config, &mut images).unwrap();
     }
 }

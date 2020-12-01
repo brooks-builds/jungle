@@ -10,7 +10,7 @@ pub mod player_draw_system;
 pub trait DrawSystem {
     fn draw(
         &mut self,
-        images: &Images,
+        images: &mut Images,
         config: &Config,
         context: &mut Context,
         location: &Point2<f32>,
