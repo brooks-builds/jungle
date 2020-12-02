@@ -5,7 +5,7 @@ use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::draw_systems::background_draw_system::BackgroundDrawSystem;
 use crate::draw_systems::hearts_draw_system::HeartDrawSystem;
-use crate::game_objects::GameObjectTypes;
+use crate::game_objects::{GameObjectBuilderError, GameObjectTypes};
 use crate::{
     config::Config, draw_systems::player_draw_system::PlayerDrawSystem, game_objects::GameObject,
     game_objects::GameObjectBuilder, handle_input::Command, images::Images,
@@ -28,7 +28,20 @@ impl MainScene {
         images: &mut Images,
     ) -> GameResult<Self> {
         let mut game_objects = HashMap::new();
-        let player = match GameObjectBuilder::new()
+        let player = Self::create_player(config).expect("error building player");
+        let hearts = Self::create_hearts(config, images).expect("error building hearts");
+        let background =
+            Self::create_background(config, images).expect("error building background");
+
+        game_objects.insert(GameObjectTypes::Player, player);
+        game_objects.insert(GameObjectTypes::Heart, hearts);
+        game_objects.insert(GameObjectTypes::Background, background);
+
+        Ok(MainScene { map, game_objects })
+    }
+
+    fn create_player(config: &Config) -> Result<GameObject, GameObjectBuilderError> {
+        GameObjectBuilder::new()
             .location(Point2::new(
                 config.player_starting_x,
                 config.player_starting_y,
@@ -38,11 +51,13 @@ impl MainScene {
             .life_system(Box::new(PlayerLifeSystem::new(config.player_lives)))
             .physics_system(Box::new(PlayerPhysicsSystem::new(config)))
             .build()
-        {
-            Ok(game_object) => game_object,
-            Err(error) => panic!(error),
-        };
-        let hearts = match GameObjectBuilder::new()
+    }
+
+    fn create_hearts(
+        config: &Config,
+        images: &Images,
+    ) -> Result<GameObject, GameObjectBuilderError> {
+        GameObjectBuilder::new()
             .location(Point2::new(
                 config.resolution_x - config.life_width * 3.0,
                 0.0,
@@ -59,11 +74,13 @@ impl MainScene {
                     .build(),
             ))
             .build()
-        {
-            Ok(heart) => heart,
-            Err(error) => panic!(error),
-        };
-        let background = match GameObjectBuilder::new()
+    }
+
+    fn create_background(
+        config: &Config,
+        images: &Images,
+    ) -> Result<GameObject, GameObjectBuilderError> {
+        GameObjectBuilder::new()
             .location(Point2::new(
                 0.0,
                 config.resolution_y - config.bedrock_height,
@@ -110,16 +127,6 @@ impl MainScene {
                     ),
             ))
             .build()
-        {
-            Ok(background) => background,
-            Err(error) => panic!(error),
-        };
-
-        game_objects.insert(GameObjectTypes::Player, player);
-        game_objects.insert(GameObjectTypes::Heart, hearts);
-        game_objects.insert(GameObjectTypes::Background, background);
-
-        Ok(MainScene { map, game_objects })
     }
 }
 
@@ -172,8 +179,20 @@ mod test {
         let map = Map::new(&config, context).unwrap();
         let mut images = Images::new(context, &config).unwrap();
         let mut main_scene: MainScene = MainScene::new(&config, context, map, &mut images).unwrap();
-        let mut images = Images::new(context, &config).unwrap();
 
         main_scene.draw(context, &config, &mut images).unwrap();
+    }
+
+    #[test]
+    fn test_create_game_objects_in_main_scene() {
+        let config = crate::config::load("config.json").unwrap();
+        let (context, _) = &mut initialize::initialize(&config).unwrap();
+        let map = Map::new(&config, context).unwrap();
+        let mut images = Images::new(context, &config).unwrap();
+        let mut main_scene: MainScene = MainScene::new(&config, context, map, &mut images).unwrap();
+
+        let player: GameObject = MainScene::create_player(&config).unwrap();
+        let hearts: GameObject = MainScene::create_hearts(&config, &images).unwrap();
+        let background: GameObject = MainScene::create_background(&config, &images).unwrap();
     }
 }
