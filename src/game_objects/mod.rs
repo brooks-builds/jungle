@@ -3,7 +3,6 @@ pub mod foliage;
 pub mod ground;
 pub mod pit;
 pub mod surface;
-pub mod surface_background;
 pub mod tree_trunks;
 
 use ggez::{nalgebra::Point2, Context, GameResult};
@@ -17,6 +16,7 @@ use crate::{
 pub enum GameObjectTypes {
     Player,
     Heart,
+    Background,
 }
 
 pub trait StaticGameObject {

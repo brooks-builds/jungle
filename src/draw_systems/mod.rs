@@ -4,6 +4,7 @@ use crate::{
     config::Config, images::Images, life_systems::LifeSystem, physics_systems::PhysicsState,
 };
 
+pub mod background_draw_system;
 pub mod hearts_draw_system;
 pub mod player_draw_system;
 

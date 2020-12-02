@@ -10,6 +10,10 @@ use self::map::ConfigMap;
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct Config {
+    #[serde(with = "crate::config::serde_color")]
+    pub bedrock_color: Color,
+    pub bedrock_height: f32,
+    pub bedrock_image: String,
     pub life_image: String,
     pub life_width: f32,
     pub player_height: f32,
@@ -34,9 +38,6 @@ pub struct Config {
     pub font_small: f32,
     pub map: Vec<ConfigMap>,
     pub start_index: usize,
-    pub bedrock_height: f32,
-    #[serde(with = "crate::config::serde_color")]
-    pub bedrock_color: Color,
     pub cave_height: f32,
     pub ground_height: f32,
     #[serde(with = "crate::config::serde_color")]
@@ -55,7 +56,7 @@ pub struct Config {
     pub tree_branch_height: f32,
     pub tree_branch_rotation: f32,
     #[serde(with = "crate::config::serde_color")]
-    pub background_color: Color,
+    pub sky_color: Color,
     pub foliage_points: u8,
     pub foliage_step_vertical: f32,
     #[serde(with = "crate::config::serde_color")]

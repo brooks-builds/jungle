@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
+use ggez::nalgebra::Point;
 use ggez::{nalgebra::Point2, Context, GameResult};
 
+use crate::draw_systems::background_draw_system::BackgroundDrawSystem;
 use crate::draw_systems::hearts_draw_system::HeartDrawSystem;
 use crate::game_objects::GameObjectTypes;
 use crate::{
@@ -61,11 +63,61 @@ impl MainScene {
             Ok(heart) => heart,
             Err(error) => panic!(error),
         };
+        let background = match GameObjectBuilder::new()
+            .location(Point2::new(
+                0.0,
+                config.resolution_y - config.bedrock_height,
+            ))
+            .width(config.resolution_x)
+            .draw_system(Box::new(
+                BackgroundDrawSystem::new(images.bedrock.clone())
+                    .bedrock(
+                        Point2::new(0.0, config.resolution_y - config.bedrock_height),
+                        config.bedrock_color,
+                    )
+                    .ground(
+                        Point2::new(
+                            0.0,
+                            config.resolution_y
+                                - config.bedrock_height
+                                - config.cave_height
+                                - config.ground_height,
+                        ),
+                        config.ground_color,
+                        config.ground_height / config.bedrock_height,
+                    )
+                    .ground(
+                        Point2::new(
+                            0.0,
+                            config.resolution_y
+                                - config.bedrock_height
+                                - config.cave_height
+                                - config.ground_height
+                                - config.surface_height,
+                        ),
+                        config.surface_color,
+                        config.surface_height / config.bedrock_height,
+                    )
+                    .ground(
+                        Point2::new(0.0, 0.0),
+                        config.sky_color,
+                        (config.resolution_y
+                            - config.bedrock_height
+                            - config.cave_height
+                            - config.ground_height
+                            - config.surface_height)
+                            / config.bedrock_height,
+                    ),
+            ))
+            .build()
+        {
+            Ok(background) => background,
+            Err(error) => panic!(error),
+        };
 
         game_objects.insert(GameObjectTypes::Player, player);
         game_objects.insert(GameObjectTypes::Heart, hearts);
-
-        // create the heart game object and add it to the game objects vector
+        game_objects.insert(GameObjectTypes::Background, background);
 
         Ok(MainScene { map, game_objects })
     }
