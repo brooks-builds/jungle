@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-
-use ggez::nalgebra::Point;
 use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::draw_systems::background_draw_system::BackgroundDrawSystem;
@@ -17,7 +14,7 @@ use super::Scene;
 
 pub struct MainScene {
     map: Map,
-    game_objects: HashMap<GameObjectTypes, GameObject>,
+    game_objects: Vec<GameObject>,
 }
 
 impl MainScene {
@@ -27,15 +24,15 @@ impl MainScene {
         map: Map,
         images: &mut Images,
     ) -> GameResult<Self> {
-        let mut game_objects = HashMap::new();
+        let mut game_objects = Vec::new();
         let player = Self::create_player(config).expect("error building player");
         let hearts = Self::create_hearts(config, images).expect("error building hearts");
         let background =
             Self::create_background(config, images).expect("error building background");
 
-        game_objects.insert(GameObjectTypes::Player, player);
-        game_objects.insert(GameObjectTypes::Heart, hearts);
-        game_objects.insert(GameObjectTypes::Background, background);
+        game_objects.push(hearts);
+        game_objects.push(background);
+        game_objects.push(player);
 
         Ok(MainScene { map, game_objects })
     }
@@ -50,6 +47,7 @@ impl MainScene {
             .draw_system(Box::new(PlayerDrawSystem::new(config)))
             .life_system(Box::new(PlayerLifeSystem::new(config.player_lives)))
             .physics_system(Box::new(PlayerPhysicsSystem::new(config)))
+            .with_type(GameObjectTypes::Player)
             .build()
     }
 
@@ -73,6 +71,7 @@ impl MainScene {
                     .set_width(config.life_width)
                     .build(),
             ))
+            .with_type(GameObjectTypes::Heart)
             .build()
     }
 
@@ -126,7 +125,17 @@ impl MainScene {
                             / config.bedrock_height,
                     ),
             ))
+            .with_type(GameObjectTypes::Background)
             .build()
+    }
+
+    fn get_first_game_object_by_type(
+        &mut self,
+        game_object_type: GameObjectTypes,
+    ) -> Option<&mut GameObject> {
+        self.game_objects
+            .iter_mut()
+            .find(|game_object| game_object.my_type == game_object_type)
     }
 }
 
@@ -140,19 +149,24 @@ impl Scene for MainScene {
     ) -> GameResult {
         self.game_objects
             .iter_mut()
-            .for_each(|(_, game_object)| game_object.update(command));
+            .for_each(|game_object| game_object.update(command));
 
-        let player = self
-            .game_objects
-            .get_mut(&GameObjectTypes::Player)
-            .expect("Could not find player");
+        let mut move_direction = None;
+        if let Some(player) = self.get_first_game_object_by_type(GameObjectTypes::Player) {
+            if player.is_offscreen_right(config.resolution_x) {
+                move_direction = Some("right");
+                player.location.x = 0.0;
+            } else if player.is_offscreen_left() {
+                move_direction = Some("left");
+                player.location.x = config.resolution_x - config.player_width;
+            }
+        }
 
-        if player.is_offscreen_right(config.resolution_x) {
-            self.map.move_right(&config, context)?;
-            player.location.x = 0.0;
-        } else if player.is_offscreen_left() {
-            self.map.move_left(&config, context)?;
-            player.location.x = config.resolution_x - config.player_width;
+        match move_direction {
+            Some("right") => self.map.move_right(config, context)?,
+            Some("left") => self.map.move_left(config, context)?,
+            Some(_) => (),
+            None => (),
         }
 
         Ok(())
@@ -162,7 +176,7 @@ impl Scene for MainScene {
         self.map.draw(context, config)?;
         self.game_objects
             .iter_mut()
-            .try_for_each(|(_, game_object)| game_object.draw(context, config, images))
+            .try_for_each(|game_object| game_object.draw(context, config, images))
     }
 }
 
@@ -178,9 +192,9 @@ mod test {
         let (context, _) = &mut initialize::initialize(&config).unwrap();
         let map = Map::new(&config, context).unwrap();
         let mut images = Images::new(context, &config).unwrap();
-        let mut main_scene: MainScene = MainScene::new(&config, context, map, &mut images).unwrap();
+        let main_scene: MainScene = MainScene::new(&config, context, map, &mut images).unwrap();
 
-        main_scene.draw(context, &config, &mut images).unwrap();
+        assert_eq!(main_scene.game_objects.len(), 3);
     }
 
     #[test]
@@ -189,10 +203,22 @@ mod test {
         let (context, _) = &mut initialize::initialize(&config).unwrap();
         let map = Map::new(&config, context).unwrap();
         let mut images = Images::new(context, &config).unwrap();
+        let _main_scene: MainScene = MainScene::new(&config, context, map, &mut images).unwrap();
+
+        let _player: GameObject = MainScene::create_player(&config).unwrap();
+        let _hearts: GameObject = MainScene::create_hearts(&config, &images).unwrap();
+        let _background: GameObject = MainScene::create_background(&config, &images).unwrap();
+    }
+
+    #[test]
+    fn ci_test_get_first_game_object_by_type() {
+        let config = crate::config::load("config.json").unwrap();
+        let (context, _) = &mut initialize::initialize(&config).unwrap();
+        let map = Map::new(&config, context).unwrap();
+        let mut images = Images::new(context, &config).unwrap();
         let mut main_scene: MainScene = MainScene::new(&config, context, map, &mut images).unwrap();
 
-        let player: GameObject = MainScene::create_player(&config).unwrap();
-        let hearts: GameObject = MainScene::create_hearts(&config, &images).unwrap();
-        let background: GameObject = MainScene::create_background(&config, &images).unwrap();
+        let _player: Option<&mut GameObject> =
+            main_scene.get_first_game_object_by_type(GameObjectTypes::Player);
     }
 }

@@ -2,10 +2,7 @@ use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::{
     config::Config,
-    game_objects::{
-        bedrock::Bedrock, foliage::Foliage, ground::Ground, pit::Pit, surface::Surface,
-        tree_trunks::TreeTrunks, StaticGameObject,
-    },
+    game_objects::{foliage::Foliage, pit::Pit, tree_trunks::TreeTrunks, StaticGameObject},
 };
 
 pub struct Map {

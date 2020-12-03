@@ -1,8 +1,5 @@
-pub mod bedrock;
 pub mod foliage;
-pub mod ground;
 pub mod pit;
-pub mod surface;
 pub mod tree_trunks;
 
 use ggez::{nalgebra::Point2, Context, GameResult};
@@ -29,6 +26,7 @@ pub struct GameObject {
     draw_system: Option<Box<dyn DrawSystem>>,
     life_system: Option<Box<dyn LifeSystem>>,
     physics_system: Option<Box<dyn PhysicsSystem>>,
+    pub my_type: GameObjectTypes,
 }
 
 impl GameObject {
@@ -73,8 +71,20 @@ impl GameObject {
     }
 }
 
-#[derive(thiserror::Error, Debug)]
-pub enum GameObjectBuilderError {}
+#[derive(Debug)]
+pub enum GameObjectBuilderError {
+    MyTypeNotSet,
+}
+
+impl std::fmt::Display for GameObjectBuilderError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GameObjectBuilderError::MyTypeNotSet => {
+                write!(f, "Type not set when building new game object")
+            }
+        }
+    }
+}
 
 pub struct GameObjectBuilder {
     location: Point2<f32>,
@@ -82,6 +92,7 @@ pub struct GameObjectBuilder {
     draw_system: Option<Box<dyn DrawSystem>>,
     life_system: Option<Box<dyn LifeSystem>>,
     physics_system: Option<Box<dyn PhysicsSystem>>,
+    my_type: Option<GameObjectTypes>,
 }
 
 impl GameObjectBuilder {
@@ -92,6 +103,7 @@ impl GameObjectBuilder {
             draw_system: None,
             life_system: None,
             physics_system: None,
+            my_type: None,
         }
     }
 
@@ -120,13 +132,25 @@ impl GameObjectBuilder {
         self
     }
 
+    pub fn with_type(mut self, game_object_type: GameObjectTypes) -> Self {
+        self.my_type = Some(game_object_type);
+        self
+    }
+
     pub fn build(self) -> Result<GameObject, GameObjectBuilderError> {
+        let my_type = if let Some(game_object_type) = self.my_type {
+            game_object_type
+        } else {
+            return Err(GameObjectBuilderError::MyTypeNotSet);
+        };
+
         Ok(GameObject {
             location: self.location,
             width: self.width,
             draw_system: self.draw_system,
             life_system: self.life_system,
             physics_system: self.physics_system,
+            my_type,
         })
     }
 }
@@ -156,6 +180,7 @@ mod test {
             .width(width)
             .draw_system(Box::new(PlayerDrawSystem::new(&config)))
             .life_system(Box::new(PlayerLifeSystem::new(lives)))
+            .with_type(GameObjectTypes::Player)
             .physics_system(Box::new(PlayerPhysicsSystem::new(&config)))
             .build()
             .unwrap();
@@ -163,6 +188,7 @@ mod test {
         assert_eq!(player.location.x, x);
         assert_eq!(player.location.y, y);
         assert_eq!(player.width, width);
+        assert_eq!(player.my_type, GameObjectTypes::Player);
         player.life_system.unwrap();
         player.physics_system.unwrap();
     }
@@ -174,6 +200,7 @@ mod test {
         let game_object = GameObjectBuilder::new()
             .location(location)
             .width(width)
+            .with_type(GameObjectTypes::Player)
             .build()
             .unwrap();
         let screen_width = 50.0;
@@ -187,6 +214,7 @@ mod test {
         let game_object = GameObjectBuilder::new()
             .location(location)
             .width(width)
+            .with_type(GameObjectTypes::Player)
             .build()
             .unwrap();
         let screen_width = 50.0;
@@ -200,6 +228,7 @@ mod test {
         let game_object = GameObjectBuilder::new()
             .location(location)
             .width(width)
+            .with_type(GameObjectTypes::Player)
             .build()
             .unwrap();
         assert_eq!(game_object.is_offscreen_left(), true);
@@ -212,6 +241,7 @@ mod test {
         let game_object = GameObjectBuilder::new()
             .location(location)
             .width(width)
+            .with_type(GameObjectTypes::Player)
             .build()
             .unwrap();
         assert_eq!(game_object.is_offscreen_left(), false);

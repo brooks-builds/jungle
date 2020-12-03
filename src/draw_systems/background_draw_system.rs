@@ -1,4 +1,3 @@
-use ggez::conf::Backend;
 use ggez::graphics::spritebatch::SpriteBatch;
 use ggez::graphics::{Color, DrawParam, Image};
 use ggez::nalgebra::Point2;
@@ -38,12 +37,12 @@ impl BackgroundDrawSystem {
 impl DrawSystem for BackgroundDrawSystem {
     fn draw(
         &mut self,
-        images: &mut crate::images::Images,
-        config: &crate::config::Config,
+        _images: &mut crate::images::Images,
+        _config: &crate::config::Config,
         context: &mut ggez::Context,
-        location: &ggez::nalgebra::Point2<f32>,
-        physics_system: Option<crate::physics_systems::PhysicsState>,
-        life_system: &Option<Box<dyn crate::life_systems::LifeSystem>>,
+        _location: &ggez::nalgebra::Point2<f32>,
+        _physics_system: Option<crate::physics_systems::PhysicsState>,
+        _life_system: &Option<Box<dyn crate::life_systems::LifeSystem>>,
     ) -> ggez::GameResult {
         ggez::graphics::draw(context, &self.grounds_spritebatch, DrawParam::new())
     }
@@ -63,7 +62,7 @@ mod tests {
         let config = config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
         let images = Images::new(context, &config).unwrap();
-        let background_draw_system = BackgroundDrawSystem::new(images.bedrock.clone());
+        let _background_draw_system = BackgroundDrawSystem::new(images.bedrock);
     }
 
     #[test]
@@ -71,8 +70,8 @@ mod tests {
         let config = config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
         let images = Images::new(context, &config).unwrap();
-        let background_draw_system =
-            BackgroundDrawSystem::new(images.bedrock.clone()).bedrock(Point2::new(0.3, 0.5), WHITE);
+        let _background_draw_system =
+            BackgroundDrawSystem::new(images.bedrock).bedrock(Point2::new(0.3, 0.5), WHITE);
     }
 
     #[test]
@@ -80,10 +79,7 @@ mod tests {
         let config = config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
         let images = Images::new(context, &config).unwrap();
-        let background_draw_system = BackgroundDrawSystem::new(images.bedrock.clone()).ground(
-            Point2::new(0.3, 0.5),
-            WHITE,
-            1.5,
-        );
+        let _background_draw_system =
+            BackgroundDrawSystem::new(images.bedrock).ground(Point2::new(0.3, 0.5), WHITE, 1.5);
     }
 }

@@ -1,4 +1,3 @@
-use ggez::graphics::spritebatch::SpriteBatch;
 use ggez::{graphics::Image, Context, GameResult};
 
 use crate::config::Config;
