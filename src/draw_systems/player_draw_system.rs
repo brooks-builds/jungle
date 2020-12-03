@@ -79,29 +79,6 @@ impl DrawSystem for PlayerDrawSystem {
         }
 
         graphics::draw(context, image, draw_param)?;
-        let border = MeshBuilder::new()
-            .rectangle(
-                ggez::graphics::DrawMode::stroke(1.0),
-                Rect::new(
-                    location.x - config.player_width / 2.0,
-                    location.y - config.player_height / 2.0,
-                    config.player_width,
-                    config.player_height,
-                ),
-                ggez::graphics::Color::new(1.0, 0.0, 0.0, 1.0),
-            )
-            .build(context)?;
-        graphics::draw(context, &border, DrawParam::new())?;
-        let center_dot = MeshBuilder::new()
-            .circle(
-                DrawMode::fill(),
-                Point2::new(location.x, location.y),
-                5.0,
-                0.1,
-                Color::new(1.0, 0.0, 0.0, 1.0),
-            )
-            .build(context)?;
-        graphics::draw(context, &center_dot, DrawParam::new())?;
         Ok(())
     }
 }
