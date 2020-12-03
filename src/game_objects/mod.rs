@@ -1,7 +1,3 @@
-pub mod foliage;
-pub mod pit;
-pub mod tree_trunks;
-
 use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::{
@@ -14,6 +10,7 @@ pub enum GameObjectTypes {
     Player,
     Heart,
     Background,
+    Tree,
 }
 
 pub trait StaticGameObject {

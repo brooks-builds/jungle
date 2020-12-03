@@ -1,48 +1,19 @@
 use ggez::{nalgebra::Point2, Context, GameResult};
 
-use crate::{
-    config::Config,
-    game_objects::{foliage::Foliage, pit::Pit, tree_trunks::TreeTrunks, StaticGameObject},
-};
+use crate::{config::Config, game_objects::pit::Pit};
 
 pub struct Map {
     current_index: usize,
-    tree_trunks: TreeTrunks,
-    foliage: Foliage,
-    center_pit: Pit,
 }
 
 impl Map {
     pub fn new(config: &Config, context: &mut Context) -> GameResult<Self> {
         let current_index = config.start_index;
-        let tree_trunks = TreeTrunks::new(config, context)?;
-        let foliage = Foliage::new(config, context)?;
-        let center_pit = Pit::new(
-            config,
-            context,
-            Point2::new(
-                config.resolution_x / 2.0 - config.pit_width / 2.0,
-                config.resolution_y
-                    - config.bedrock_height
-                    - config.cave_height
-                    - config.ground_height
-                    - config.surface_height
-                    + config.pit_margin,
-            ),
-        )?;
 
-        Ok(Map {
-            current_index,
-            tree_trunks,
-            foliage,
-            center_pit,
-        })
+        Ok(Map { current_index })
     }
 
     pub fn draw(&self, context: &mut Context, config: &Config) -> GameResult {
-        self.tree_trunks.draw(config, context)?;
-        self.foliage.draw(config, context)?;
-
         if config.map[self.current_index].pits == 1 {
             self.center_pit.draw(config, context)?;
         }
@@ -56,7 +27,6 @@ impl Map {
         } else {
             self.current_index + 1
         };
-        self.tree_trunks = TreeTrunks::new(config, context)?;
         Ok(())
     }
 
@@ -66,7 +36,6 @@ impl Map {
         } else {
             self.current_index - 1
         };
-        self.tree_trunks = TreeTrunks::new(config, context)?;
         Ok(())
     }
 }

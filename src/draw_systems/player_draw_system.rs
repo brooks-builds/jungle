@@ -1,10 +1,9 @@
 use ggez::{
     graphics::Rect,
-    graphics::{self, Color, DrawMode, DrawParam},
+    graphics::{self, DrawParam},
     nalgebra::Point2,
     Context, GameResult,
 };
-use graphics::MeshBuilder;
 
 use crate::{
     config::Config, images::Images, life_systems::LifeSystem, physics_systems::PhysicsState,

@@ -2,39 +2,36 @@ use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::draw_systems::background_draw_system::BackgroundDrawSystem;
 use crate::draw_systems::hearts_draw_system::HeartDrawSystem;
+use crate::draw_systems::tree_draw_system::TreeDrawSystem;
 use crate::game_objects::{GameObjectBuilderError, GameObjectTypes};
 use crate::{
     config::Config, draw_systems::player_draw_system::PlayerDrawSystem, game_objects::GameObject,
     game_objects::GameObjectBuilder, handle_input::Command, images::Images,
-    life_systems::player_life_system::PlayerLifeSystem, map::Map,
+    life_systems::player_life_system::PlayerLifeSystem,
     physics_systems::player_physics_system::PlayerPhysicsSystem,
 };
 
 use super::Scene;
 
 pub struct MainScene {
-    map: Map,
     game_objects: Vec<GameObject>,
 }
 
 impl MainScene {
-    pub fn new(
-        config: &Config,
-        _context: &mut Context,
-        map: Map,
-        images: &mut Images,
-    ) -> GameResult<Self> {
+    pub fn new(config: &Config, _context: &mut Context, images: &mut Images) -> GameResult<Self> {
         let mut game_objects = Vec::new();
         let player = Self::create_player(config).expect("error building player");
         let hearts = Self::create_hearts(config, images).expect("error building hearts");
         let background =
             Self::create_background(config, images).expect("error building background");
+        let trees = Self::create_trees(config).expect("error creating trees");
 
         game_objects.push(hearts);
         game_objects.push(background);
+        game_objects.push(trees);
         game_objects.push(player);
 
-        Ok(MainScene { map, game_objects })
+        Ok(MainScene { game_objects })
     }
 
     fn create_player(config: &Config) -> Result<GameObject, GameObjectBuilderError> {
@@ -137,43 +134,32 @@ impl MainScene {
             .iter_mut()
             .find(|game_object| game_object.my_type == game_object_type)
     }
+
+    fn create_trees(config: &Config) -> Result<GameObject, GameObjectBuilderError> {
+        GameObjectBuilder::new()
+            .location(Point2::new(0.0, 0.0))
+            .width(config.resolution_x)
+            .with_type(GameObjectTypes::Tree)
+            .draw_system(Box::new(TreeDrawSystem::new()))
+            .build()
+    }
 }
 
 impl Scene for MainScene {
     fn update(
         &mut self,
-        context: &mut Context,
+        _context: &mut Context,
         command: Option<Command>,
-        config: &Config,
+        _config: &Config,
         _active_scene: &mut super::ActiveScene,
     ) -> GameResult {
         self.game_objects
             .iter_mut()
             .for_each(|game_object| game_object.update(command));
-
-        let mut move_direction = None;
-        if let Some(player) = self.get_first_game_object_by_type(GameObjectTypes::Player) {
-            if player.is_offscreen_right(config.resolution_x) {
-                move_direction = Some("right");
-                player.location.x = 0.0;
-            } else if player.is_offscreen_left() {
-                move_direction = Some("left");
-                player.location.x = config.resolution_x - config.player_width;
-            }
-        }
-
-        match move_direction {
-            Some("right") => self.map.move_right(config, context)?,
-            Some("left") => self.map.move_left(config, context)?,
-            Some(_) => (),
-            None => (),
-        }
-
         Ok(())
     }
 
     fn draw(&mut self, context: &mut Context, config: &Config, images: &mut Images) -> GameResult {
-        self.map.draw(context, config)?;
         self.game_objects
             .iter_mut()
             .try_for_each(|game_object| game_object.draw(context, config, images))
@@ -190,9 +176,8 @@ mod test {
     fn test_create_main_scene() {
         let config = crate::config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
-        let map = Map::new(&config, context).unwrap();
         let mut images = Images::new(context, &config).unwrap();
-        let main_scene: MainScene = MainScene::new(&config, context, map, &mut images).unwrap();
+        let main_scene: MainScene = MainScene::new(&config, context, &mut images).unwrap();
 
         assert_eq!(main_scene.game_objects.len(), 3);
     }
@@ -201,9 +186,8 @@ mod test {
     fn test_create_game_objects_in_main_scene() {
         let config = crate::config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
-        let map = Map::new(&config, context).unwrap();
         let mut images = Images::new(context, &config).unwrap();
-        let _main_scene: MainScene = MainScene::new(&config, context, map, &mut images).unwrap();
+        let _main_scene: MainScene = MainScene::new(&config, context, &mut images).unwrap();
 
         let _player: GameObject = MainScene::create_player(&config).unwrap();
         let _hearts: GameObject = MainScene::create_hearts(&config, &images).unwrap();
@@ -214,9 +198,8 @@ mod test {
     fn ci_test_get_first_game_object_by_type() {
         let config = crate::config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
-        let map = Map::new(&config, context).unwrap();
         let mut images = Images::new(context, &config).unwrap();
-        let mut main_scene: MainScene = MainScene::new(&config, context, map, &mut images).unwrap();
+        let mut main_scene: MainScene = MainScene::new(&config, context, &mut images).unwrap();
 
         let _player: Option<&mut GameObject> =
             main_scene.get_first_game_object_by_type(GameObjectTypes::Player);
