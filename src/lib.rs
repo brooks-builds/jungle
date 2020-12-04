@@ -5,7 +5,6 @@ mod handle_input;
 mod images;
 pub mod initialize;
 mod life_systems;
-mod map;
 mod physics_systems;
 mod scenes;
 
@@ -15,7 +14,6 @@ use ggez::{graphics, Context, GameResult};
 use ggez::{graphics::BLACK, timer};
 use handle_input::HandleInput;
 use images::Images;
-use map::Map;
 use scenes::{
     end_scene::EndScene, main_scene::MainScene, pause_scene::PauseScene, start_scene::StartScene,
     ActiveScene, Scene,
@@ -36,12 +34,11 @@ impl GameState {
     pub fn new(config: Config, context: &mut Context) -> GameResult<Self> {
         let active_scene = ActiveScene::Start;
         let starting_scene = StartScene::new(&config, context);
-        let map = Map::new(&config, context)?;
-        let main_scene = MainScene::new(&config, context, map)?;
+        let mut images = Images::new(context, &config)?;
+        let main_scene = MainScene::new(&config, context, &mut images)?;
         let pause_scene = PauseScene::new();
         let end_scene = EndScene::new();
         let handle_input = HandleInput::new(&config)?;
-        let images = Images::new(context, &config)?;
 
         Ok(Self {
             active_scene,
@@ -96,12 +93,19 @@ impl EventHandler for GameState {
         graphics::clear(context, BLACK);
 
         match self.active_scene {
-            ActiveScene::Start => self
-                .starting_scene
-                .draw(context, &self.config, &self.images)?,
-            ActiveScene::Main => self.main_scene.draw(context, &self.config, &self.images)?,
-            ActiveScene::Pause => self.pause_scene.draw(context, &self.config, &self.images)?,
-            ActiveScene::End => self.end_scene.draw(context, &self.config, &self.images)?,
+            ActiveScene::Start => {
+                self.starting_scene
+                    .draw(context, &self.config, &mut self.images)?
+            }
+            ActiveScene::Main => self
+                .main_scene
+                .draw(context, &self.config, &mut self.images)?,
+            ActiveScene::Pause => self
+                .pause_scene
+                .draw(context, &self.config, &mut self.images)?,
+            ActiveScene::End => self
+                .end_scene
+                .draw(context, &self.config, &mut self.images)?,
         }
 
         graphics::present(context)

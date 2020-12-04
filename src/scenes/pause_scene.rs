@@ -33,7 +33,12 @@ impl Scene for PauseScene {
         Ok(())
     }
 
-    fn draw(&mut self, context: &mut Context, _config: &Config, _images: &Images) -> GameResult {
+    fn draw(
+        &mut self,
+        context: &mut Context,
+        _config: &Config,
+        _images: &mut Images,
+    ) -> GameResult {
         graphics::draw(context, &self.text, DrawParam::new())
     }
 }
