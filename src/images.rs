@@ -12,6 +12,7 @@ pub struct Images {
     pub bedrock: Image,
     pub trees: Mesh,
     pub foliage: Mesh,
+    pub pit1: Mesh,
 }
 
 impl Images {
@@ -23,6 +24,7 @@ impl Images {
             bedrock: Image::new(context, &config.bedrock_image)?,
             trees: Self::create_trees(context, config)?,
             foliage: Self::create_foliage(context, config)?,
+            pit1: Self::create_single_pit(config, context)?,
         })
     }
 
@@ -115,6 +117,21 @@ impl Images {
         }
 
         mesh.build(context)
+    }
+
+    fn create_single_pit(config: &Config, context: &mut Context) -> GameResult<Mesh> {
+        MeshBuilder::new()
+            .rectangle(
+                DrawMode::fill(),
+                Rect::new(
+                    -(config.pit_width / 2.0),
+                    -(config.pit_height / 2.0),
+                    config.pit_width,
+                    config.pit_height,
+                ),
+                config.pit_color,
+            )
+            .build(context)
     }
 }
 

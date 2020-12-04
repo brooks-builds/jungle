@@ -41,21 +41,13 @@
     "font_small": 36.0,
     "start_index": 0,
     "map": [
-        {
-            "pits": 0
-        },
-        {
-            "pits": 1
-        },
-        {
-            "pits": 1
-        }
+        ["Pit1"]
     ],
     "foliage_points": 50,
     "foliage_step_vertical": 15.0,
     "foliage_color": [33, 43, 18],
     "pit_width": 75.0,
-    "pit_margin": 5.0,
+    "pit_height": 130.0,
     "pit_color": [0, 0, 0],
     "player_running_spritesheet": "/jungle_player_running-Sheet.png",
     "player_speed": 10.0

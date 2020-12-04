@@ -2,6 +2,7 @@ use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::draw_systems::background_draw_system::BackgroundDrawSystem;
 use crate::draw_systems::hearts_draw_system::HeartDrawSystem;
+use crate::draw_systems::single_pit_draw_system::SinglePitDrawSystem;
 use crate::game_objects::{GameObjectBuilderError, GameObjectTypes};
 use crate::{
     config::Config, draw_systems::player_draw_system::PlayerDrawSystem, game_objects::GameObject,
@@ -14,6 +15,7 @@ use super::Scene;
 
 pub struct MainScene {
     game_objects: Vec<GameObject>,
+    current_screen: usize,
 }
 
 impl MainScene {
@@ -24,11 +26,17 @@ impl MainScene {
         let background =
             Self::create_background(config, images).expect("error building background");
 
+        let pit1 = Self::create_pit1(config).expect("error creating pit1");
+
         game_objects.push(background);
         game_objects.push(hearts);
+        game_objects.push(pit1);
         game_objects.push(player);
 
-        Ok(MainScene { game_objects })
+        Ok(MainScene {
+            game_objects,
+            current_screen: config.start_index,
+        })
     }
 
     fn create_player(config: &Config) -> Result<GameObject, GameObjectBuilderError> {
@@ -131,6 +139,15 @@ impl MainScene {
             .iter_mut()
             .find(|game_object| game_object.my_type == game_object_type)
     }
+
+    fn create_pit1(config: &Config) -> Result<GameObject, GameObjectBuilderError> {
+        GameObjectBuilder::new()
+            .location(Point2::new(config.resolution_x / 2.0, 500.0))
+            .width(config.pit_width)
+            .draw_system(Box::new(SinglePitDrawSystem::new()))
+            .with_type(GameObjectTypes::Feature)
+            .build()
+    }
 }
 
 impl Scene for MainScene {
@@ -168,6 +185,7 @@ mod test {
         let main_scene: MainScene = MainScene::new(&config, context, &mut images).unwrap();
 
         assert_eq!(main_scene.game_objects.len(), 3);
+        assert_eq!(main_scene.current_screen, config.start_index);
     }
 
     #[test]
@@ -191,5 +209,12 @@ mod test {
 
         let _player: Option<&mut GameObject> =
             main_scene.get_first_game_object_by_type(GameObjectTypes::Player);
+    }
+
+    #[test]
+    fn ci_test_create_pit1_game_object() {
+        let config = crate::config::load("config.json").unwrap();
+
+        let pit1: GameObject = MainScene::create_pit1(&config).unwrap();
     }
 }

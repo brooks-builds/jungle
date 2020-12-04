@@ -6,7 +6,7 @@ use ggez::{event::Button, graphics::Color};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 
-use self::map::ConfigMap;
+use self::map::MapFeature;
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -36,7 +36,7 @@ pub struct Config {
     pub font_large: f32,
     pub font_medium: f32,
     pub font_small: f32,
-    pub map: Vec<ConfigMap>,
+    pub map: Vec<Vec<MapFeature>>,
     pub start_index: usize,
     pub cave_height: f32,
     pub ground_height: f32,
@@ -62,7 +62,7 @@ pub struct Config {
     #[serde(with = "crate::config::serde_color")]
     pub foliage_color: Color,
     pub pit_width: f32,
-    pub pit_margin: f32,
+    pub pit_height: f32,
     #[serde(with = "crate::config::serde_color")]
     pub pit_color: Color,
     pub player_standing_image: String,

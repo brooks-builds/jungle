@@ -10,6 +10,7 @@ pub enum GameObjectTypes {
     Player,
     Heart,
     Background,
+    Feature,
 }
 
 pub trait StaticGameObject {
