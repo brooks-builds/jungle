@@ -11,6 +11,7 @@ pub struct Images {
     pub life: Image,
     pub bedrock: Image,
     pub trees: Mesh,
+    pub foliage: Mesh,
 }
 
 impl Images {
@@ -21,6 +22,7 @@ impl Images {
             life: Image::new(context, &config.life_image)?,
             bedrock: Image::new(context, &config.bedrock_image)?,
             trees: Self::create_trees(context, config)?,
+            foliage: Self::create_foliage(context, config)?,
         })
     }
 
@@ -82,6 +84,34 @@ impl Images {
                 ),
                 config.tree_trunk_color,
             )
+        }
+
+        mesh.build(context)
+    }
+
+    fn create_foliage(context: &mut Context, config: &Config) -> GameResult<Mesh> {
+        let y = config.resolution_y
+            - config.bedrock_height
+            - config.cave_height
+            - config.ground_height
+            - config.surface_height
+            - config.tree_trunk_height;
+        let mut sin_step: f32 = 0.0;
+        let section_width = config.resolution_x / config.foliage_points as f32;
+        let mut mesh = &mut MeshBuilder::new();
+
+        for count in 0..config.foliage_points {
+            mesh = mesh.rectangle(
+                DrawMode::fill(),
+                Rect::new(
+                    count as f32 * section_width,
+                    0.0,
+                    section_width,
+                    y + sin_step.sin() * config.foliage_step_vertical,
+                ),
+                config.foliage_color,
+            );
+            sin_step += 1.0;
         }
 
         mesh.build(context)

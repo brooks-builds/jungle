@@ -2,7 +2,6 @@ use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::draw_systems::background_draw_system::BackgroundDrawSystem;
 use crate::draw_systems::hearts_draw_system::HeartDrawSystem;
-use crate::draw_systems::tree_draw_system::TreeDrawSystem;
 use crate::game_objects::{GameObjectBuilderError, GameObjectTypes};
 use crate::{
     config::Config, draw_systems::player_draw_system::PlayerDrawSystem, game_objects::GameObject,
@@ -24,11 +23,9 @@ impl MainScene {
         let hearts = Self::create_hearts(config, images).expect("error building hearts");
         let background =
             Self::create_background(config, images).expect("error building background");
-        let trees = Self::create_trees(config).expect("error creating trees");
 
-        game_objects.push(hearts);
         game_objects.push(background);
-        game_objects.push(trees);
+        game_objects.push(hearts);
         game_objects.push(player);
 
         Ok(MainScene { game_objects })
@@ -133,15 +130,6 @@ impl MainScene {
         self.game_objects
             .iter_mut()
             .find(|game_object| game_object.my_type == game_object_type)
-    }
-
-    fn create_trees(config: &Config) -> Result<GameObject, GameObjectBuilderError> {
-        GameObjectBuilder::new()
-            .location(Point2::new(0.0, 0.0))
-            .width(config.resolution_x)
-            .with_type(GameObjectTypes::Tree)
-            .draw_system(Box::new(TreeDrawSystem::new()))
-            .build()
     }
 }
 

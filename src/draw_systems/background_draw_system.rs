@@ -37,14 +37,16 @@ impl BackgroundDrawSystem {
 impl DrawSystem for BackgroundDrawSystem {
     fn draw(
         &mut self,
-        _images: &mut crate::images::Images,
+        images: &mut crate::images::Images,
         _config: &crate::config::Config,
         context: &mut ggez::Context,
         _location: &ggez::nalgebra::Point2<f32>,
         _physics_system: Option<crate::physics_systems::PhysicsState>,
         _life_system: &Option<Box<dyn crate::life_systems::LifeSystem>>,
     ) -> ggez::GameResult {
-        ggez::graphics::draw(context, &self.grounds_spritebatch, DrawParam::new())
+        ggez::graphics::draw(context, &self.grounds_spritebatch, DrawParam::new())?;
+        ggez::graphics::draw(context, &images.trees, DrawParam::new())?;
+        ggez::graphics::draw(context, &images.foliage, DrawParam::new())
     }
 }
 

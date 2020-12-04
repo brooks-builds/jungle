@@ -51,7 +51,7 @@
             "pits": 1
         }
     ],
-    "foliage_points": 25,
+    "foliage_points": 50,
     "foliage_step_vertical": 15.0,
     "foliage_color": [33, 43, 18],
     "pit_width": 75.0,
