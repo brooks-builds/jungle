@@ -2,7 +2,7 @@ use ggez::{event::Button, input::gamepad::Gilrs, GameResult};
 
 use crate::{config::Config, scenes::ActiveScene};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Command {
     StartGame,
     MoveRight,

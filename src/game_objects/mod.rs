@@ -1,17 +1,16 @@
-pub mod bedrock;
-pub mod foliage;
-pub mod ground;
-pub mod pit;
-pub mod surface;
-pub mod surface_background;
-pub mod tree_trunks;
-
 use ggez::{nalgebra::Point2, Context, GameResult};
 
 use crate::{
     config::Config, draw_systems::DrawSystem, handle_input::Command, images::Images,
     life_systems::LifeSystem, physics_systems::PhysicsSystem,
 };
+
+#[derive(PartialEq, Debug, Eq, Hash)]
+pub enum GameObjectTypes {
+    Player,
+    Heart,
+    Background,
+}
 
 pub trait StaticGameObject {
     fn draw(&self, config: &Config, context: &mut Context) -> GameResult;
@@ -20,26 +19,37 @@ pub trait StaticGameObject {
 pub struct GameObject {
     pub location: Point2<f32>,
     pub width: f32,
-    draw_system: Box<dyn DrawSystem>,
+    draw_system: Option<Box<dyn DrawSystem>>,
     life_system: Option<Box<dyn LifeSystem>>,
     physics_system: Option<Box<dyn PhysicsSystem>>,
+    pub my_type: GameObjectTypes,
 }
 
 impl GameObject {
-    pub fn draw(&mut self, context: &mut Context, config: &Config, images: &Images) -> GameResult {
+    pub fn draw(
+        &mut self,
+        context: &mut Context,
+        config: &Config,
+        images: &mut Images,
+    ) -> GameResult {
         let physics_state = if let Some(physics_system) = &self.physics_system {
             Some(physics_system.get_state())
         } else {
             None
         };
-        self.draw_system.draw(
-            images,
-            config,
-            context,
-            &self.location,
-            physics_state,
-            &self.life_system,
-        )
+
+        if let Some(draw_system) = &mut self.draw_system {
+            draw_system.draw(
+                images,
+                config,
+                context,
+                &self.location,
+                physics_state,
+                &self.life_system,
+            )?;
+        }
+
+        Ok(())
     }
 
     pub fn update(&mut self, command: Option<Command>) {
@@ -47,10 +57,30 @@ impl GameObject {
             physics_system.update(&mut self.location, command);
         }
     }
+
+    pub fn is_offscreen_right(&self, screen_width: f32) -> bool {
+        self.location.x - self.width / 2.0 >= screen_width
+    }
+
+    pub fn is_offscreen_left(&self) -> bool {
+        self.location.x + self.width / 2.0 <= 0.0
+    }
 }
 
-#[derive(thiserror::Error, Debug)]
-pub enum GameObjectBuilderError {}
+#[derive(Debug)]
+pub enum GameObjectBuilderError {
+    MyTypeNotSet,
+}
+
+impl std::fmt::Display for GameObjectBuilderError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GameObjectBuilderError::MyTypeNotSet => {
+                write!(f, "Type not set when building new game object")
+            }
+        }
+    }
+}
 
 pub struct GameObjectBuilder {
     location: Point2<f32>,
@@ -58,6 +88,7 @@ pub struct GameObjectBuilder {
     draw_system: Option<Box<dyn DrawSystem>>,
     life_system: Option<Box<dyn LifeSystem>>,
     physics_system: Option<Box<dyn PhysicsSystem>>,
+    my_type: Option<GameObjectTypes>,
 }
 
 impl GameObjectBuilder {
@@ -68,6 +99,7 @@ impl GameObjectBuilder {
             draw_system: None,
             life_system: None,
             physics_system: None,
+            my_type: None,
         }
     }
 
@@ -96,13 +128,25 @@ impl GameObjectBuilder {
         self
     }
 
+    pub fn with_type(mut self, game_object_type: GameObjectTypes) -> Self {
+        self.my_type = Some(game_object_type);
+        self
+    }
+
     pub fn build(self) -> Result<GameObject, GameObjectBuilderError> {
+        let my_type = if let Some(game_object_type) = self.my_type {
+            game_object_type
+        } else {
+            return Err(GameObjectBuilderError::MyTypeNotSet);
+        };
+
         Ok(GameObject {
             location: self.location,
             width: self.width,
-            draw_system: self.draw_system.unwrap(),
+            draw_system: self.draw_system,
             life_system: self.life_system,
             physics_system: self.physics_system,
+            my_type,
         })
     }
 }
@@ -132,6 +176,7 @@ mod test {
             .width(width)
             .draw_system(Box::new(PlayerDrawSystem::new(&config)))
             .life_system(Box::new(PlayerLifeSystem::new(lives)))
+            .with_type(GameObjectTypes::Player)
             .physics_system(Box::new(PlayerPhysicsSystem::new(&config)))
             .build()
             .unwrap();
@@ -139,7 +184,62 @@ mod test {
         assert_eq!(player.location.x, x);
         assert_eq!(player.location.y, y);
         assert_eq!(player.width, width);
+        assert_eq!(player.my_type, GameObjectTypes::Player);
         player.life_system.unwrap();
         player.physics_system.unwrap();
+    }
+
+    #[test]
+    fn ci_test_is_offscreen_right() {
+        let location = Point2::new(52.5, 50.0);
+        let width = 5.0;
+        let game_object = GameObjectBuilder::new()
+            .location(location)
+            .width(width)
+            .with_type(GameObjectTypes::Player)
+            .build()
+            .unwrap();
+        let screen_width = 50.0;
+        assert_eq!(game_object.is_offscreen_right(screen_width), true);
+    }
+
+    #[test]
+    fn ci_test_is_not_offscreen_right() {
+        let location = Point2::new(25.0, 50.0);
+        let width = 5.0;
+        let game_object = GameObjectBuilder::new()
+            .location(location)
+            .width(width)
+            .with_type(GameObjectTypes::Player)
+            .build()
+            .unwrap();
+        let screen_width = 50.0;
+        assert_eq!(game_object.is_offscreen_right(screen_width), false);
+    }
+
+    #[test]
+    fn ci_test_is_offscreen_left() {
+        let location = Point2::new(-2.5, 50.0);
+        let width = 5.0;
+        let game_object = GameObjectBuilder::new()
+            .location(location)
+            .width(width)
+            .with_type(GameObjectTypes::Player)
+            .build()
+            .unwrap();
+        assert_eq!(game_object.is_offscreen_left(), true);
+    }
+
+    #[test]
+    fn ci_test_is_not_offscreen_left() {
+        let location = Point2::new(0.0, 50.0);
+        let width = 5.0;
+        let game_object = GameObjectBuilder::new()
+            .location(location)
+            .width(width)
+            .with_type(GameObjectTypes::Player)
+            .build()
+            .unwrap();
+        assert_eq!(game_object.is_offscreen_left(), false);
     }
 }

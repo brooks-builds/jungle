@@ -1,10 +1,9 @@
 use ggez::{
     graphics::Rect,
-    graphics::{self, Color, DrawMode, DrawParam},
+    graphics::{self, DrawParam},
     nalgebra::Point2,
     Context, GameResult,
 };
-use graphics::MeshBuilder;
 
 use crate::{
     config::Config, images::Images, life_systems::LifeSystem, physics_systems::PhysicsState,
@@ -46,12 +45,12 @@ impl PlayerDrawSystem {
 impl DrawSystem for PlayerDrawSystem {
     fn draw(
         &mut self,
-        images: &Images,
+        images: &mut Images,
         config: &Config,
         context: &mut Context,
         location: &Point2<f32>,
         physics_state: Option<PhysicsState>,
-        life_system: &Option<Box<dyn LifeSystem>>,
+        _life_system: &Option<Box<dyn LifeSystem>>,
     ) -> GameResult {
         let mut image = &images.standing_player;
         let mut draw_param = DrawParam::new().dest([
@@ -78,42 +77,7 @@ impl DrawSystem for PlayerDrawSystem {
             }
         }
 
-        if let Some(life_system) = life_system {
-            let width = images.life.width() as f32;
-            for count in 0..life_system.get_lives() {
-                graphics::draw(
-                    context,
-                    &images.life,
-                    DrawParam::new()
-                        .dest([config.resolution_x - width - count as f32 * width, 0.0]),
-                )?;
-            }
-        }
-
         graphics::draw(context, image, draw_param)?;
-        let border = MeshBuilder::new()
-            .rectangle(
-                ggez::graphics::DrawMode::stroke(1.0),
-                Rect::new(
-                    location.x - config.player_width / 2.0,
-                    location.y - config.player_height / 2.0,
-                    config.player_width,
-                    config.player_height,
-                ),
-                ggez::graphics::Color::new(1.0, 0.0, 0.0, 1.0),
-            )
-            .build(context)?;
-        graphics::draw(context, &border, DrawParam::new())?;
-        let center_dot = MeshBuilder::new()
-            .circle(
-                DrawMode::fill(),
-                Point2::new(location.x, location.y),
-                5.0,
-                0.1,
-                Color::new(1.0, 0.0, 0.0, 1.0),
-            )
-            .build(context)?;
-        graphics::draw(context, &center_dot, DrawParam::new())?;
         Ok(())
     }
 }
@@ -221,10 +185,10 @@ mod test {
 
     fn draw(player_draw_system: &mut PlayerDrawSystem, config: &Config, state: PhysicsState) {
         let (context, _) = &mut initialize(&config).unwrap();
-        let images = Images::new(context, &config).unwrap();
+        let mut images = Images::new(context, &config).unwrap();
         let location = Point2::new(0.0, 0.0);
         player_draw_system
-            .draw(&images, &config, context, &location, Some(state), &None)
+            .draw(&mut images, &config, context, &location, Some(state), &None)
             .unwrap();
     }
 }
