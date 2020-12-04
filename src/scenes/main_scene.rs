@@ -183,7 +183,7 @@ mod test {
     }
 
     #[test]
-    fn ci_test_get_first_game_object_by_type() {
+    fn test_get_first_game_object_by_type() {
         let config = crate::config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
         let mut images = Images::new(context, &config).unwrap();
