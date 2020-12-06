@@ -18,12 +18,15 @@ use handle_input::HandleInput;
 use images::Images;
 use scenes::{
     end_scene::EndScene, main_scene::MainScene, pause_scene::PauseScene, start_scene::StartScene,
-    ActiveScene, Scene,
+    ActiveScene,
 };
 
 pub struct GameState {
     active_scene: ActiveScene,
-    scenes: HashMap<ActiveScene, Box<dyn Scene>>,
+    starting_scene: StartScene,
+    main_scene: MainScene,
+    pause_scene: PauseScene,
+    end_scene: EndScene,
     handle_input: HandleInput,
     config: Config,
     images: Images,
@@ -37,17 +40,14 @@ impl GameState {
         let main_scene = MainScene::new(&config, context, &mut images)?;
         let pause_scene = PauseScene::new();
         let end_scene = EndScene::new();
-        let mut scenes = HashMap::new();
         let handle_input = HandleInput::new(&config)?;
-
-        scenes.insert(ActiveScene::Start, Box::new(starting_scene));
-        scenes.insert(ActiveScene::Main, Box::new(main_scene));
-        scenes.insert(ActiveScene::Pause, Box::new(pause_scene));
-        scenes.insert(ActiveScene::End, Box::new(end_scene));
 
         Ok(Self {
             active_scene,
-            scenes,
+            starting_scene,
+            main_scene,
+            pause_scene,
+            end_scene,
             handle_input,
             config,
             images,
@@ -58,33 +58,18 @@ impl GameState {
 impl EventHandler for GameState {
     fn update(&mut self, context: &mut Context) -> GameResult {
         while timer::check_update_time(context, 30) {
-            let button_pressed = self.handle_input.run(&self.active_scene);
+            let command = self.handle_input.run(&self.active_scene);
 
             match self.active_scene {
-                ActiveScene::Start => self.starting_scene.update(
-                    context,
-                    button_pressed,
-                    &self.config,
-                    &mut self.active_scene,
-                )?,
-                ActiveScene::Main => self.main_scene.update(
-                    context,
-                    button_pressed,
-                    &self.config,
-                    &mut self.active_scene,
-                )?,
-                ActiveScene::Pause => self.pause_scene.update(
-                    context,
-                    button_pressed,
-                    &self.config,
-                    &mut self.active_scene,
-                )?,
-                ActiveScene::End => self.end_scene.update(
-                    context,
-                    button_pressed,
-                    &self.config,
-                    &mut self.active_scene,
-                )?,
+                ActiveScene::Start => self
+                    .starting_scene
+                    .update(command, &mut self.active_scene)?,
+                ActiveScene::Main => {
+                    self.main_scene
+                        .update(command, &self.config, &mut self.images, context)?
+                }
+                ActiveScene::Pause => self.pause_scene.update()?,
+                ActiveScene::End => self.end_scene.update()?,
             }
         }
 
@@ -95,19 +80,12 @@ impl EventHandler for GameState {
         graphics::clear(context, BLACK);
 
         match self.active_scene {
-            ActiveScene::Start => {
-                self.starting_scene
-                    .draw(context, &self.config, &mut self.images)?
-            }
+            ActiveScene::Start => self.starting_scene.draw(context)?,
             ActiveScene::Main => self
                 .main_scene
                 .draw(context, &self.config, &mut self.images)?,
-            ActiveScene::Pause => self
-                .pause_scene
-                .draw(context, &self.config, &mut self.images)?,
-            ActiveScene::End => self
-                .end_scene
-                .draw(context, &self.config, &mut self.images)?,
+            ActiveScene::Pause => self.pause_scene.draw(context)?,
+            ActiveScene::End => self.end_scene.draw(context)?,
         }
 
         graphics::present(context)
@@ -124,6 +102,6 @@ mod test {
         let (context, _) = &mut initialize::initialize(&config).unwrap();
         let game_state = GameState::new(config, context).unwrap();
 
-        assert_eq!(game_state.scenes.len(), 4);
+        assert_eq!(game_state.active_scene, ActiveScene::Start);
     }
 }

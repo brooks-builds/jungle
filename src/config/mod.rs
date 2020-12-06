@@ -6,7 +6,7 @@ use ggez::{event::Button, graphics::Color};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 
-use self::map::MapFeature;
+pub use self::map::MapFeature;
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct Config {

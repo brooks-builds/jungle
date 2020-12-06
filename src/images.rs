@@ -32,11 +32,12 @@ impl Images {
         let mut rng = rand::thread_rng();
         let mut mesh = &mut MeshBuilder::new();
 
-        let random_offset = rng.gen_range(-config.tree_trunk_shift_by, config.tree_trunk_shift_by);
         let space_between_trees: f32 = (config.resolution_x - config.tree_trunk_count as f32)
             / (config.tree_trunk_count + 1) as f32;
 
         for count in 1..config.tree_trunk_count {
+            let random_offset =
+                rng.gen_range(-config.tree_trunk_shift_by, config.tree_trunk_shift_by);
             let x = count as f32 * space_between_trees + random_offset;
             let y = config.resolution_y
                 - config.bedrock_height
@@ -132,6 +133,12 @@ impl Images {
                 config.pit_color,
             )
             .build(context)
+    }
+
+    pub fn reset_trees(&mut self, context: &mut Context, config: &Config) -> GameResult {
+        self.trees = Self::create_trees(context, config)?;
+
+        Ok(())
     }
 }
 

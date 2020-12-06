@@ -49,10 +49,30 @@ impl GameObjects {
             .iter_mut()
             .try_for_each(|game_object| game_object.draw(context, config, images))
     }
+
+    pub fn remove_features(&mut self) {
+        self.objects
+            .retain(|game_object| game_object.my_type != GameObjectTypes::Feature);
+    }
+
+    pub fn remove_player(&mut self) -> Option<GameObject> {
+        let index = self
+            .objects
+            .iter()
+            .enumerate()
+            .find(|(_index, game_object)| game_object.my_type == GameObjectTypes::Player);
+
+        if let Some((player_index, _)) = index {
+            Some(self.objects.remove(player_index))
+        } else {
+            None
+        }
+    }
 }
 
 #[cfg(test)]
 mod test {
+    use builders::pit1::create_pit1;
     use builders::player::create_player;
     use game_object::GameObjectBuilder;
     use ggez::graphics::Image;
@@ -119,5 +139,34 @@ mod test {
         game_objects.push(player);
 
         game_objects.draw(context, &config, &mut images).unwrap();
+    }
+
+    #[test]
+    fn ci_test_remove_game_features() {
+        let config = config::load("config.json").unwrap();
+        let player = create_player(&config).unwrap();
+        let mut game_objects = GameObjects::new();
+        let pit = create_pit1(&config).unwrap();
+
+        game_objects.push(player);
+        game_objects.push(pit);
+
+        assert_eq!(game_objects.objects.len(), 2);
+        game_objects.remove_features();
+        assert_eq!(game_objects.objects.len(), 1);
+        assert_eq!(game_objects.objects[0].my_type, GameObjectTypes::Player);
+    }
+
+    #[test]
+    fn ci_test_remove_player() {
+        let config = config::load("config.json").unwrap();
+        let player = create_player(&config).unwrap();
+        let mut game_objects = GameObjects::new();
+
+        game_objects.push(player);
+
+        let player = game_objects.remove_player().unwrap();
+        assert_eq!(player.my_type, GameObjectTypes::Player);
+        assert_eq!(game_objects.objects.len(), 0);
     }
 }

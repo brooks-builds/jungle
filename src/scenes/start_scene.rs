@@ -7,8 +7,6 @@ use ggez::{
 
 use crate::{config::Config, handle_input::Command, images::Images};
 
-use super::Scene;
-
 pub struct StartScene {
     title: Text,
     title_position: Point2<f32>,
@@ -40,16 +38,11 @@ impl StartScene {
             subtitle_position,
         }
     }
-}
 
-impl Scene for StartScene {
-    fn update(
+    pub fn update(
         &mut self,
-        _context: &mut Context,
         command: Option<Command>,
-        _config: &Config,
         active_scene: &mut super::ActiveScene,
-        _images: &mut Images,
     ) -> GameResult {
         if let Some(command) = command {
             if matches!(command, Command::StartGame) {
@@ -59,12 +52,7 @@ impl Scene for StartScene {
         Ok(())
     }
 
-    fn draw(
-        &mut self,
-        context: &mut Context,
-        _config: &Config,
-        _images: &mut Images,
-    ) -> GameResult {
+    pub fn draw(&mut self, context: &mut Context) -> GameResult {
         graphics::draw(
             context,
             &self.title,

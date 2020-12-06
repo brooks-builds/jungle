@@ -13,6 +13,7 @@ use super::GameObjectTypes;
 pub struct GameObject {
     pub location: Point2<f32>,
     pub width: f32,
+    pub height: f32,
     draw_system: Option<Box<dyn DrawSystem>>,
     life_system: Option<Box<dyn LifeSystem>>,
     physics_system: Option<Box<dyn PhysicsSystem>>,
@@ -83,6 +84,7 @@ pub struct GameObjectBuilder {
     life_system: Option<Box<dyn LifeSystem>>,
     physics_system: Option<Box<dyn PhysicsSystem>>,
     my_type: Option<GameObjectTypes>,
+    height: f32,
 }
 
 impl GameObjectBuilder {
@@ -94,6 +96,7 @@ impl GameObjectBuilder {
             life_system: None,
             physics_system: None,
             my_type: None,
+            height: 0.0,
         }
     }
 
@@ -127,6 +130,11 @@ impl GameObjectBuilder {
         self
     }
 
+    pub fn height(mut self, height: f32) -> Self {
+        self.height = height;
+        self
+    }
+
     pub fn build(self) -> Result<GameObject, GameObjectBuilderError> {
         let my_type = if let Some(game_object_type) = self.my_type {
             game_object_type
@@ -137,6 +145,7 @@ impl GameObjectBuilder {
         Ok(GameObject {
             location: self.location,
             width: self.width,
+            height: self.height,
             draw_system: self.draw_system,
             life_system: self.life_system,
             physics_system: self.physics_system,
@@ -165,6 +174,7 @@ mod test {
         let width = 100.0;
         let lives = 3;
         let config = config::load("config.json").unwrap();
+        let height = 50.0;
         let player: GameObject = GameObjectBuilder::new()
             .location(Point2::new(x, y))
             .width(width)
@@ -172,6 +182,7 @@ mod test {
             .life_system(Box::new(PlayerLifeSystem::new(lives)))
             .with_type(GameObjectTypes::Player)
             .physics_system(Box::new(PlayerPhysicsSystem::new(&config)))
+            .height(height)
             .build()
             .unwrap();
 
@@ -179,6 +190,7 @@ mod test {
         assert_eq!(player.location.y, y);
         assert_eq!(player.width, width);
         assert_eq!(player.my_type, GameObjectTypes::Player);
+        assert_eq!(player.height, height);
         player.life_system.unwrap();
         player.physics_system.unwrap();
     }

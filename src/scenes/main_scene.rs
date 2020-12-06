@@ -1,5 +1,6 @@
 use ggez::{nalgebra::Point2, Context, GameResult};
 
+use crate::config::MapFeature;
 use crate::draw_systems::background_draw_system::BackgroundDrawSystem;
 use crate::draw_systems::hearts_draw_system::HeartDrawSystem;
 use crate::draw_systems::single_pit_draw_system::SinglePitDrawSystem;
@@ -14,8 +15,6 @@ use crate::{
     physics_systems::player_physics_system::PlayerPhysicsSystem,
 };
 
-use super::Scene;
-
 pub struct MainScene {
     game_objects: GameObjects,
     current_screen: usize,
@@ -28,17 +27,18 @@ impl MainScene {
         let hearts = create_hearts(images, config).expect("error building hearts");
         let background = create_background(images, config).expect("error building background");
 
-        let pit1 = Self::create_pit1(config).expect("error creating pit1");
-
         game_objects.push(background);
         game_objects.push(hearts);
-        game_objects.push(pit1);
         game_objects.push(player);
 
-        Ok(MainScene {
+        let mut main_scene = MainScene {
             game_objects,
             current_screen: config.start_index,
-        })
+        };
+
+        main_scene.change_screen(config);
+
+        Ok(main_scene)
     }
 
     fn create_pit1(config: &Config) -> Result<GameObject, GameObjectBuilderError> {
@@ -56,16 +56,13 @@ impl MainScene {
             .with_type(GameObjectTypes::Feature)
             .build()
     }
-}
 
-impl Scene for MainScene {
-    fn update(
+    pub fn update(
         &mut self,
-        _context: &mut Context,
         command: Option<Command>,
         config: &Config,
-        _active_scene: &mut super::ActiveScene,
         images: &mut Images,
+        context: &mut Context,
     ) -> GameResult {
         self.game_objects.update(command);
 
@@ -73,17 +70,42 @@ impl Scene for MainScene {
             if player.is_offscreen_right(config.resolution_x) {
                 self.current_screen += 1;
                 player.location.x = 0.0;
+                self.change_screen(config);
+                images.reset_trees(context, config)?;
             } else if player.is_offscreen_left() {
                 self.current_screen -= 1;
                 player.location.x = config.resolution_x;
+                self.change_screen(config);
+                images.reset_trees(context, config)?;
             }
         }
 
         Ok(())
     }
 
-    fn draw(&mut self, context: &mut Context, config: &Config, images: &mut Images) -> GameResult {
+    pub fn draw(
+        &mut self,
+        context: &mut Context,
+        config: &Config,
+        images: &mut Images,
+    ) -> GameResult {
         self.game_objects.draw(context, config, images)
+    }
+
+    fn change_screen(&mut self, config: &Config) {
+        let player = self.game_objects.remove_player().unwrap();
+        self.game_objects.remove_features();
+        config.map[self.current_screen]
+            .iter()
+            .for_each(|map_feature| match map_feature {
+                MapFeature::Pit1 => {
+                    let pit1 = Self::create_pit1(config).expect("error creating pit1");
+                    self.game_objects.push(pit1);
+                }
+                MapFeature::Pit3 => {}
+                MapFeature::Rope => {}
+            });
+        self.game_objects.push(player);
     }
 }
 
