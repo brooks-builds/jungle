@@ -15,7 +15,7 @@ pub fn create_pit1(config: &Config) -> Result<GameObject, GameObjectBuilderError
                 - config.bedrock_height
                 - config.cave_height
                 - config.ground_height
-                - config.surface_height / 2.0,
+                - (config.surface_bottom_height + config.surface_top_height) / 2.0,
         ))
         .width(config.pit_width)
         .height(config.pit_height)
@@ -45,7 +45,7 @@ mod test {
                 - config.bedrock_height
                 - config.cave_height
                 - config.ground_height
-                - config.surface_height / 2.0
+                - (config.surface_bottom_height + config.surface_top_height) / 2.0
         );
         assert_eq!(pit1.my_type, GameObjectTypes::Feature);
         assert_eq!(pit1.width, config.pit_width);

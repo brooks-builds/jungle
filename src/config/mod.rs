@@ -42,7 +42,8 @@ pub struct Config {
     pub ground_height: f32,
     #[serde(with = "crate::config::serde_color")]
     pub ground_color: Color,
-    pub surface_height: f32,
+    pub surface_bottom_height: f32,
+    pub surface_top_height: f32,
     #[serde(with = "crate::config::serde_color")]
     pub surface_color: Color,
     #[serde(with = "crate::config::serde_color")]

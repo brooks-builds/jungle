@@ -56,15 +56,15 @@ impl GameObjects {
             .retain(|game_object| game_object.my_type != GameObjectTypes::Feature);
     }
 
-    pub fn remove_player(&mut self) -> Option<GameObject> {
+    pub fn get_player_index(&self) -> Option<usize> {
         let index = self
             .objects
             .iter()
             .enumerate()
             .find(|(_index, game_object)| game_object.my_type == GameObjectTypes::Player);
 
-        if let Some((player_index, _)) = index {
-            Some(self.objects.remove(player_index))
+        if let Some((index, _)) = index {
+            Some(index)
         } else {
             None
         }
@@ -76,6 +76,10 @@ impl GameObjects {
             .into_iter()
             .filter(|game_object| game_object.my_type == GameObjectTypes::Feature)
             .collect()
+    }
+
+    pub fn insert(&mut self, game_object: GameObject, index: usize) {
+        self.objects.insert(index, game_object);
     }
 }
 
@@ -164,16 +168,19 @@ mod test {
     }
 
     #[test]
-    fn ci_test_remove_player() {
+    fn ci_test_get_player_index() {
         let config = config::load("config.json").unwrap();
         let player = create_player(&config).unwrap();
         let mut game_objects = GameObjects::new();
 
         game_objects.push(player);
 
-        let player = game_objects.remove_player().unwrap();
-        assert_eq!(player.my_type, GameObjectTypes::Player);
-        assert_eq!(game_objects.objects.len(), 0);
+        let player_index: usize = game_objects.get_player_index().unwrap();
+        assert_eq!(
+            game_objects.objects[player_index].my_type,
+            GameObjectTypes::Player
+        );
+        assert_eq!(game_objects.objects.len(), 1);
     }
 
     #[test]
@@ -186,5 +193,17 @@ mod test {
         let all_features: Vec<GameObject> = game_objects.get_all_features();
         assert_eq!(all_features.len(), 1);
         assert_eq!(all_features[0].my_type, GameObjectTypes::Feature);
+    }
+
+    #[test]
+    fn ci_test_insert_into_objects() {
+        let mut game_objects = GameObjects::new();
+        let config = &config::load("config.json").unwrap();
+        let pit = create_pit1(config).unwrap();
+        let player = create_player(&config).unwrap();
+        game_objects.push(player);
+        game_objects.insert(pit, 0);
+        assert_eq!(game_objects.objects[0].my_type, GameObjectTypes::Feature);
+        assert_eq!(game_objects.objects[1].my_type, GameObjectTypes::Player);
     }
 }

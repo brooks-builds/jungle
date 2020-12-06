@@ -43,7 +43,8 @@ impl Images {
                 - config.bedrock_height
                 - config.cave_height
                 - config.ground_height
-                - config.surface_height
+                - config.surface_bottom_height
+                - config.surface_top_height
                 - config.tree_trunk_height;
             mesh = mesh.rectangle(
                 DrawMode::fill(),
@@ -97,7 +98,8 @@ impl Images {
             - config.bedrock_height
             - config.cave_height
             - config.ground_height
-            - config.surface_height
+            - config.surface_bottom_height
+            - config.surface_top_height
             - config.tree_trunk_height;
         let mut sin_step: f32 = 0.0;
         let section_width = config.resolution_x / config.foliage_points as f32;
