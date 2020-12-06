@@ -29,6 +29,7 @@ impl Scene for EndScene {
         _button_pressed: Option<Command>,
         _config: &Config,
         _active_scene: &mut super::ActiveScene,
+        _images: &mut Images,
     ) -> GameResult {
         Ok(())
     }

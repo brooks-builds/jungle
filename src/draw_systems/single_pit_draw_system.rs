@@ -14,11 +14,11 @@ impl DrawSystem for SinglePitDrawSystem {
     fn draw(
         &mut self,
         images: &mut crate::images::Images,
-        config: &crate::config::Config,
+        _config: &crate::config::Config,
         context: &mut ggez::Context,
         location: &ggez::nalgebra::Point2<f32>,
-        physics_system: Option<crate::physics_systems::PhysicsState>,
-        life_system: &Option<Box<dyn crate::life_systems::LifeSystem>>,
+        _physics_system: Option<crate::physics_systems::PhysicsState>,
+        _life_system: &Option<Box<dyn crate::life_systems::LifeSystem>>,
     ) -> ggez::GameResult {
         ggez::graphics::draw(
             context,
@@ -34,6 +34,6 @@ mod tests {
 
     #[test]
     fn ci_test_create_single_pit_draw_system() {
-        let pit_draw_system: SinglePitDrawSystem = SinglePitDrawSystem::new();
+        let _pit_draw_system: SinglePitDrawSystem = SinglePitDrawSystem::new();
     }
 }

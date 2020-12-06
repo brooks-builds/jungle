@@ -3,6 +3,7 @@ use ggez::{
     graphics::{self, Font, Scale, Text},
     Context, GameResult,
 };
+use graphics::Image;
 
 use crate::{config::Config, handle_input::Command, images::Images};
 
@@ -29,6 +30,7 @@ impl Scene for PauseScene {
         _button_pressed: Option<Command>,
         _config: &Config,
         _active_scene: &mut super::ActiveScene,
+        _images: &mut Images,
     ) -> GameResult {
         Ok(())
     }

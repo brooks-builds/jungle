@@ -49,6 +49,7 @@ impl Scene for StartScene {
         command: Option<Command>,
         _config: &Config,
         active_scene: &mut super::ActiveScene,
+        _images: &mut Images,
     ) -> GameResult {
         if let Some(command) = command {
             if matches!(command, Command::StartGame) {

@@ -8,6 +8,8 @@ mod life_systems;
 mod physics_systems;
 mod scenes;
 
+use std::collections::HashMap;
+
 use config::Config;
 use ggez::event::EventHandler;
 use ggez::{graphics, Context, GameResult};
@@ -21,10 +23,7 @@ use scenes::{
 
 pub struct GameState {
     active_scene: ActiveScene,
-    starting_scene: StartScene,
-    main_scene: MainScene,
-    pause_scene: PauseScene,
-    end_scene: EndScene,
+    scenes: HashMap<ActiveScene, Box<dyn Scene>>,
     handle_input: HandleInput,
     config: Config,
     images: Images,
@@ -38,14 +37,17 @@ impl GameState {
         let main_scene = MainScene::new(&config, context, &mut images)?;
         let pause_scene = PauseScene::new();
         let end_scene = EndScene::new();
+        let mut scenes = HashMap::new();
         let handle_input = HandleInput::new(&config)?;
+
+        scenes.insert(ActiveScene::Start, Box::new(starting_scene));
+        scenes.insert(ActiveScene::Main, Box::new(main_scene));
+        scenes.insert(ActiveScene::Pause, Box::new(pause_scene));
+        scenes.insert(ActiveScene::End, Box::new(end_scene));
 
         Ok(Self {
             active_scene,
-            starting_scene,
-            main_scene,
-            pause_scene,
-            end_scene,
+            scenes,
             handle_input,
             config,
             images,
@@ -120,6 +122,8 @@ mod test {
     fn test_create_game_state() {
         let config = config::load("config.json").unwrap();
         let (context, _) = &mut initialize::initialize(&config).unwrap();
-        let _game_state = GameState::new(config, context).unwrap();
+        let game_state = GameState::new(config, context).unwrap();
+
+        assert_eq!(game_state.scenes.len(), 4);
     }
 }

@@ -7,6 +7,7 @@ pub mod main_scene;
 pub mod pause_scene;
 pub mod start_scene;
 
+#[derive(Eq, PartialEq, Hash)]
 #[allow(dead_code)]
 pub enum ActiveScene {
     Start,
@@ -34,6 +35,7 @@ pub trait Scene {
         button_pressed: Option<Command>,
         config: &Config,
         active_scene: &mut ActiveScene,
+        images: &mut Images,
     ) -> GameResult;
 
     fn draw(&mut self, context: &mut Context, config: &Config, images: &mut Images) -> GameResult;

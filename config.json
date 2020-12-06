@@ -41,7 +41,8 @@
     "font_small": 36.0,
     "start_index": 0,
     "map": [
-        ["Pit1"]
+        ["Pit1"],
+        []
     ],
     "foliage_points": 50,
     "foliage_step_vertical": 15.0,
