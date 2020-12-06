@@ -28,7 +28,6 @@ pub fn create_pit1(config: &Config) -> Result<GameObject, GameObjectBuilderError
 #[allow(clippy::float_cmp)]
 mod test {
     use crate::config;
-    use crate::game_objects::game_object::{GameObjectBuilder, GameObjectBuilderError};
     use crate::game_objects::game_object_types::GameObjectfeatureTypes;
     use crate::game_objects::{GameObject, GameObjectTypes};
 

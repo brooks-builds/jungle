@@ -5,7 +5,7 @@ use ggez::{
     Context, GameResult,
 };
 
-use crate::{config::Config, handle_input::Command, images::Images};
+use crate::{config::Config, handle_input::Command};
 
 pub struct StartScene {
     title: Text,

@@ -1,7 +1,3 @@
-use ggez::{Context, GameResult};
-
-use crate::{config::Config, handle_input::Command, images::Images};
-
 pub mod end_scene;
 pub mod main_scene;
 pub mod pause_scene;

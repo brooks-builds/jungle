@@ -11,10 +11,7 @@ pub fn create_background(
     config: &Config,
 ) -> Result<GameObject, GameObjectBuilderError> {
     GameObjectBuilder::new()
-        .location(Point2::new(
-            0.0,
-            config.resolution_y - config.bedrock_height,
-        ))
+        .location(Point2::new(0.0, 0.0))
         .width(config.resolution_x)
         .draw_system(Box::new(
             BackgroundDrawSystem::new(images.bedrock.clone())

@@ -1,20 +1,12 @@
-use ggez::{nalgebra::Point2, Context, GameResult};
+use ggez::{Context, GameResult};
 
 use crate::config::MapFeature;
-use crate::draw_systems::background_draw_system::BackgroundDrawSystem;
-use crate::draw_systems::hearts_draw_system::HeartDrawSystem;
-use crate::draw_systems::single_pit_draw_system::SinglePitDrawSystem;
 use crate::game_objects::builders::background::create_background;
 use crate::game_objects::builders::hearts::create_hearts;
 use crate::game_objects::builders::pit1::create_pit1;
 use crate::game_objects::builders::player::create_player;
-use crate::game_objects::game_object::{GameObjectBuilder, GameObjectBuilderError};
 use crate::game_objects::{GameObjectTypes, GameObjects};
-use crate::{
-    config::Config, draw_systems::player_draw_system::PlayerDrawSystem, game_objects::GameObject,
-    handle_input::Command, images::Images, life_systems::player_life_system::PlayerLifeSystem,
-    physics_systems::player_physics_system::PlayerPhysicsSystem,
-};
+use crate::{config::Config, handle_input::Command, images::Images};
 
 pub struct MainScene {
     game_objects: GameObjects,

@@ -84,11 +84,8 @@ mod test {
     use builders::pit1::create_pit1;
     use builders::player::create_player;
     use game_object::GameObjectBuilder;
-    use ggez::graphics::Image;
-    use hearts_draw_system::HeartDrawSystem;
 
     use crate::config;
-    use crate::draw_systems::hearts_draw_system;
     use crate::draw_systems::single_pit_draw_system::SinglePitDrawSystem;
     use crate::initialize::initialize;
 

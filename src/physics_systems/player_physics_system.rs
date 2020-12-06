@@ -1,4 +1,4 @@
-use ggez::nalgebra::{Point, Point2};
+use ggez::nalgebra::Point2;
 
 use crate::game_objects::game_object_types::GameObjectfeatureTypes;
 use crate::game_objects::GameObject;

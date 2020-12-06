@@ -8,8 +8,6 @@ mod life_systems;
 mod physics_systems;
 mod scenes;
 
-use std::collections::HashMap;
-
 use config::Config;
 use ggez::event::EventHandler;
 use ggez::{graphics, Context, GameResult};

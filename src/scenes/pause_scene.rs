@@ -3,9 +3,6 @@ use ggez::{
     graphics::{self, Font, Scale, Text},
     Context, GameResult,
 };
-use graphics::Image;
-
-use crate::{config::Config, handle_input::Command, images::Images};
 
 #[derive(Default)]
 pub struct PauseScene {
