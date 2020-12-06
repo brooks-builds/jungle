@@ -3,6 +3,7 @@ use ggez::nalgebra::Point2;
 use crate::config::Config;
 use crate::draw_systems::single_pit_draw_system::SinglePitDrawSystem;
 use crate::game_objects::game_object::{GameObjectBuilder, GameObjectBuilderError};
+use crate::game_objects::game_object_types::GameObjectfeatureTypes;
 use crate::game_objects::{GameObject, GameObjectTypes};
 
 pub fn create_pit1(config: &Config) -> Result<GameObject, GameObjectBuilderError> {
@@ -19,6 +20,7 @@ pub fn create_pit1(config: &Config) -> Result<GameObject, GameObjectBuilderError
         .width(config.pit_width)
         .height(config.pit_height)
         .draw_system(Box::new(SinglePitDrawSystem::new()))
+        .with_feature_type(GameObjectfeatureTypes::Pit1)
         .build()
 }
 
@@ -27,6 +29,7 @@ pub fn create_pit1(config: &Config) -> Result<GameObject, GameObjectBuilderError
 mod test {
     use crate::config;
     use crate::game_objects::game_object::{GameObjectBuilder, GameObjectBuilderError};
+    use crate::game_objects::game_object_types::GameObjectfeatureTypes;
     use crate::game_objects::{GameObject, GameObjectTypes};
 
     use super::*;
@@ -48,5 +51,6 @@ mod test {
         assert_eq!(pit1.my_type, GameObjectTypes::Feature);
         assert_eq!(pit1.width, config.pit_width);
         assert_eq!(pit1.height, config.pit_height);
+        assert_eq!(pit1.feature_type, Some(GameObjectfeatureTypes::Pit1));
     }
 }

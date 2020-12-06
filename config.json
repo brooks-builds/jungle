@@ -7,6 +7,9 @@
     "ground_height": 50.0,
     "life_image": "/heart.png",
     "life_width": 32,
+    "pit_color": [0, 0, 0],
+    "pit_height": 100.0,
+    "pit_width": 125.0,
     "player_height": 160.0,
     "player_lives": 7,
     "player_running_spritesheet_count": 5.0,
@@ -47,9 +50,6 @@
     "foliage_points": 50,
     "foliage_step_vertical": 15.0,
     "foliage_color": [33, 43, 18],
-    "pit_width": 75.0,
-    "pit_height": 130.0,
-    "pit_color": [0, 0, 0],
     "player_running_spritesheet": "/jungle_player_running-Sheet.png",
     "player_speed": 10.0
 }

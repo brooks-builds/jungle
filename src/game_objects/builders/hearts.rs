@@ -10,8 +10,18 @@ pub fn create_hearts(
     images: &Images,
     config: &Config,
 ) -> Result<GameObject, GameObjectBuilderError> {
+    let life_image_width = images.life.width() as f32;
     GameObjectBuilder::new()
-        .draw_system(Box::new(HeartDrawSystem::new(images.life.clone())))
+        .draw_system(Box::new(
+            HeartDrawSystem::new(images.life.clone())
+                .set_lives(config.player_lives)
+                .set_location(
+                    config.resolution_x - life_image_width * config.player_lives as f32,
+                    0.0,
+                )
+                .set_width(life_image_width)
+                .build(),
+        ))
         .location(Point2::new(config.resolution_x - config.life_width, 0.0))
         .width(config.life_width)
         .with_type(crate::game_objects::GameObjectTypes::Heart)

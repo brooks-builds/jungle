@@ -1,23 +1,39 @@
+use ggez::nalgebra::{Point, Point2};
+
+use crate::game_objects::game_object_types::GameObjectfeatureTypes;
+use crate::game_objects::GameObject;
 use crate::{config::Config, handle_input::Command};
 
 use super::{PhysicsState, PhysicsSystem};
 
 pub struct PlayerPhysicsSystem {
     state: PhysicsState,
-    velocity: f32,
+    velocity: Point2<f32>,
     speed: f32,
+    width: f32,
+    height: f32,
+    cave_floor_y: f32,
+    on_surface: bool,
 }
 
 impl PlayerPhysicsSystem {
     pub fn new(config: &Config) -> Self {
         let state = PhysicsState::StandingStill;
-        let velocity = 0.0;
+        let velocity = Point2::new(0.0, 0.0);
         let speed = config.player_speed;
+        let width = config.player_width;
+        let height = config.player_height;
+        let cave_floor_y = config.resolution_y - config.bedrock_height;
+        let on_surface = true;
 
         Self {
             state,
             velocity,
             speed,
+            width,
+            height,
+            cave_floor_y,
+            on_surface,
         }
     }
 }
@@ -25,26 +41,60 @@ impl PlayerPhysicsSystem {
 impl PhysicsSystem for PlayerPhysicsSystem {
     fn update(
         &mut self,
-        location: &mut ggez::nalgebra::Point2<f32>,
+        location: &mut Point2<f32>,
         command: Option<crate::handle_input::Command>,
+        features: Vec<GameObject>,
     ) {
-        if let Some(command) = command {
-            match command {
-                Command::MoveRight => self.state = PhysicsState::MovingRight,
-                Command::StopMovingRight => self.state = PhysicsState::StandingStill,
-                Command::StartGame => {}
-                Command::MoveLeft => self.state = PhysicsState::MovingLeft,
-                Command::StopMovingLeft => self.state = PhysicsState::StandingStill,
+        if self.state != PhysicsState::Falling {
+            if let Some(command) = command {
+                match command {
+                    Command::MoveRight => self.state = PhysicsState::MovingRight,
+                    Command::StopMovingRight => self.state = PhysicsState::StandingStill,
+                    Command::StartGame => {}
+                    Command::MoveLeft => self.state = PhysicsState::MovingLeft,
+                    Command::StopMovingLeft => self.state = PhysicsState::StandingStill,
+                }
             }
         }
 
         match self.state {
-            PhysicsState::MovingRight => self.velocity = self.speed,
-            PhysicsState::StandingStill => self.velocity = 0.0,
-            PhysicsState::MovingLeft => self.velocity = -self.speed,
+            PhysicsState::MovingRight => self.velocity.x = self.speed,
+            PhysicsState::StandingStill => {
+                self.velocity.x = 0.0;
+                self.velocity.y = 0.0;
+            }
+            PhysicsState::MovingLeft => self.velocity.x = -self.speed,
+            PhysicsState::Falling => {
+                self.velocity.x = 0.0;
+                self.velocity.y = self.speed;
+                if location.y + self.height / 2.0 >= self.cave_floor_y {
+                    location.y = self.cave_floor_y - self.height / 2.0;
+                    self.state = PhysicsState::StandingStill;
+                }
+            }
         }
+        // dbg!(self.state);
 
-        location.x += self.velocity
+        features.iter().for_each(|feature| {
+            if let Some(feature_type) = feature.feature_type {
+                match feature_type {
+                    GameObjectfeatureTypes::Pit1 => {
+                        if self.on_surface
+                            && (location.x - self.width / 2.0
+                                >= feature.location.x - feature.width / 2.0
+                                && location.x + self.width / 2.0
+                                    <= feature.location.x + feature.width / 2.0)
+                        {
+                            self.state = PhysicsState::Falling;
+                            self.on_surface = false;
+                        }
+                    }
+                }
+            }
+        });
+
+        location.x += self.velocity.x;
+        location.y += self.velocity.y;
     }
 
     fn get_state(&self) -> super::PhysicsState {
@@ -66,8 +116,16 @@ mod test {
         let config = config::load("config.json").unwrap();
         let player_physics_system = PlayerPhysicsSystem::new(&config);
         assert_eq!(player_physics_system.state, PhysicsState::StandingStill);
-        assert_eq!(player_physics_system.velocity, 0.0);
+        assert_eq!(player_physics_system.velocity.x, 0.0);
+        assert_eq!(player_physics_system.velocity.y, 0.0);
         assert_eq!(player_physics_system.speed, config.player_speed);
+        assert_eq!(player_physics_system.width, config.player_width);
+        assert_eq!(player_physics_system.height, config.player_height);
+        assert_eq!(
+            player_physics_system.cave_floor_y,
+            config.resolution_y - config.bedrock_height
+        );
+        assert_eq!(player_physics_system.on_surface, true);
     }
 
     #[test]
@@ -76,7 +134,7 @@ mod test {
         let config = config::load("config.json").unwrap();
         let mut player_physics_system = PlayerPhysicsSystem::new(&config);
         let mut location = Point2::new(0.0, 0.0);
-        player_physics_system.update(&mut location, None);
+        player_physics_system.update(&mut location, None, vec![]);
         assert_eq!(location.x, 0.0);
         assert_eq!(location.y, 0.0);
     }
@@ -88,7 +146,7 @@ mod test {
         let mut player_physics_system = PlayerPhysicsSystem::new(&config);
         let mut location = Point2::new(0.0, 0.0);
         let command = Command::MoveRight;
-        player_physics_system.update(&mut location, Some(command));
+        player_physics_system.update(&mut location, Some(command), vec![]);
         assert_eq!(location.x, config.player_speed);
         assert_eq!(location.y, 0.0);
     }
@@ -100,14 +158,14 @@ mod test {
         let mut player_physics_system = PlayerPhysicsSystem::new(&config);
         let mut location = Point2::new(0.0, 0.0);
         let command = Command::MoveRight;
-        player_physics_system.update(&mut location, Some(command));
+        player_physics_system.update(&mut location, Some(command), vec![]);
         assert_eq!(location.x, config.player_speed);
         assert_eq!(location.y, 0.0);
         assert_eq!(player_physics_system.state, PhysicsState::MovingRight);
-        player_physics_system.update(&mut location, None);
+        player_physics_system.update(&mut location, None, vec![]);
         assert_eq!(location.x, config.player_speed * 2.0);
         assert_eq!(location.y, 0.0);
-        player_physics_system.update(&mut location, Some(Command::StopMovingRight));
+        player_physics_system.update(&mut location, Some(Command::StopMovingRight), vec![]);
         assert_eq!(location.x, config.player_speed * 2.0);
         assert_eq!(location.y, 0.0);
         assert_eq!(player_physics_system.state, PhysicsState::StandingStill);
@@ -119,15 +177,15 @@ mod test {
         let config = config::load("config.json").unwrap();
         let mut player_physics_system = PlayerPhysicsSystem::new(&config);
         let mut location = Point2::new(0.0, 0.0);
-        player_physics_system.update(&mut location, Some(Command::MoveLeft));
+        player_physics_system.update(&mut location, Some(Command::MoveLeft), vec![]);
         assert_eq!(location.x, -config.player_speed);
         assert_eq!(location.y, 0.0);
         assert_eq!(player_physics_system.state, PhysicsState::MovingLeft);
-        player_physics_system.update(&mut location, None);
+        player_physics_system.update(&mut location, None, vec![]);
         assert_eq!(location.x, -config.player_speed * 2.0);
         assert_eq!(location.y, 0.0);
         assert_eq!(player_physics_system.state, PhysicsState::MovingLeft);
-        player_physics_system.update(&mut location, Some(Command::StopMovingLeft));
+        player_physics_system.update(&mut location, Some(Command::StopMovingLeft), vec![]);
         assert_eq!(location.x, -config.player_speed * 2.0);
         assert_eq!(location.y, 0.0);
         assert_eq!(player_physics_system.state, PhysicsState::StandingStill);

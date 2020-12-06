@@ -34,9 +34,10 @@ impl GameObjects {
     }
 
     pub fn update(&mut self, command: Option<Command>) {
+        let features = self.get_all_features();
         self.objects
             .iter_mut()
-            .for_each(|game_object| game_object.update(command));
+            .for_each(|game_object| game_object.update(command, features.clone()));
     }
 
     pub fn draw(
@@ -67,6 +68,14 @@ impl GameObjects {
         } else {
             None
         }
+    }
+
+    pub fn get_all_features(&self) -> Vec<GameObject> {
+        self.objects
+            .clone()
+            .into_iter()
+            .filter(|game_object| game_object.my_type == GameObjectTypes::Feature)
+            .collect()
     }
 }
 
@@ -168,5 +177,17 @@ mod test {
         let player = game_objects.remove_player().unwrap();
         assert_eq!(player.my_type, GameObjectTypes::Player);
         assert_eq!(game_objects.objects.len(), 0);
+    }
+
+    #[test]
+    fn ci_test_get_all_features() {
+        let mut game_objects = GameObjects::new();
+        let config = &config::load("config.json").unwrap();
+        let pit = create_pit1(config).unwrap();
+        game_objects.push(pit);
+
+        let all_features: Vec<GameObject> = game_objects.get_all_features();
+        assert_eq!(all_features.len(), 1);
+        assert_eq!(all_features[0].my_type, GameObjectTypes::Feature);
     }
 }

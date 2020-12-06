@@ -6,6 +6,7 @@ use crate::draw_systems::hearts_draw_system::HeartDrawSystem;
 use crate::draw_systems::single_pit_draw_system::SinglePitDrawSystem;
 use crate::game_objects::builders::background::create_background;
 use crate::game_objects::builders::hearts::create_hearts;
+use crate::game_objects::builders::pit1::create_pit1;
 use crate::game_objects::builders::player::create_player;
 use crate::game_objects::game_object::{GameObjectBuilder, GameObjectBuilderError};
 use crate::game_objects::{GameObjectTypes, GameObjects};
@@ -28,8 +29,8 @@ impl MainScene {
         let background = create_background(images, config).expect("error building background");
 
         game_objects.push(background);
-        game_objects.push(hearts);
         game_objects.push(player);
+        game_objects.push(hearts);
 
         let mut main_scene = MainScene {
             game_objects,
@@ -39,22 +40,6 @@ impl MainScene {
         main_scene.change_screen(config);
 
         Ok(main_scene)
-    }
-
-    fn create_pit1(config: &Config) -> Result<GameObject, GameObjectBuilderError> {
-        GameObjectBuilder::new()
-            .location(Point2::new(
-                config.resolution_x / 2.0,
-                config.resolution_y
-                    - config.cave_height
-                    - config.bedrock_height
-                    - config.ground_height
-                    - config.surface_height / 2.0,
-            ))
-            .width(config.pit_width)
-            .draw_system(Box::new(SinglePitDrawSystem::new()))
-            .with_type(GameObjectTypes::Feature)
-            .build()
     }
 
     pub fn update(
@@ -99,7 +84,7 @@ impl MainScene {
             .iter()
             .for_each(|map_feature| match map_feature {
                 MapFeature::Pit1 => {
-                    let pit1 = Self::create_pit1(config).expect("error creating pit1");
+                    let pit1 = create_pit1(config).expect("error creating pit1");
                     self.game_objects.push(pit1);
                 }
                 MapFeature::Pit3 => {}

@@ -8,6 +8,7 @@ use crate::images::Images;
 use crate::life_systems::LifeSystem;
 use crate::physics_systems::PhysicsSystem;
 
+use super::game_object_types::GameObjectfeatureTypes;
 use super::GameObjectTypes;
 
 pub struct GameObject {
@@ -18,6 +19,7 @@ pub struct GameObject {
     life_system: Option<Box<dyn LifeSystem>>,
     physics_system: Option<Box<dyn PhysicsSystem>>,
     pub my_type: GameObjectTypes,
+    pub feature_type: Option<GameObjectfeatureTypes>,
 }
 
 impl GameObject {
@@ -47,9 +49,9 @@ impl GameObject {
         Ok(())
     }
 
-    pub fn update(&mut self, command: Option<Command>) {
+    pub fn update(&mut self, command: Option<Command>, features: Vec<GameObject>) {
         if let Some(physics_system) = &mut self.physics_system {
-            physics_system.update(&mut self.location, command);
+            physics_system.update(&mut self.location, command, features);
         }
     }
 
@@ -59,6 +61,21 @@ impl GameObject {
 
     pub fn is_offscreen_left(&self) -> bool {
         self.location.x + self.width / 2.0 <= 0.0
+    }
+}
+
+impl Clone for GameObject {
+    fn clone(&self) -> Self {
+        Self {
+            location: self.location,
+            width: self.width,
+            height: self.height,
+            draw_system: None,
+            life_system: None,
+            physics_system: None,
+            my_type: self.my_type,
+            feature_type: self.feature_type,
+        }
     }
 }
 
@@ -85,6 +102,7 @@ pub struct GameObjectBuilder {
     physics_system: Option<Box<dyn PhysicsSystem>>,
     my_type: Option<GameObjectTypes>,
     height: f32,
+    feature_type: Option<GameObjectfeatureTypes>,
 }
 
 impl GameObjectBuilder {
@@ -97,6 +115,7 @@ impl GameObjectBuilder {
             physics_system: None,
             my_type: None,
             height: 0.0,
+            feature_type: None,
         }
     }
 
@@ -135,6 +154,11 @@ impl GameObjectBuilder {
         self
     }
 
+    pub fn with_feature_type(mut self, feature_type: GameObjectfeatureTypes) -> Self {
+        self.feature_type = Some(feature_type);
+        self
+    }
+
     pub fn build(self) -> Result<GameObject, GameObjectBuilderError> {
         let my_type = if let Some(game_object_type) = self.my_type {
             game_object_type
@@ -150,6 +174,7 @@ impl GameObjectBuilder {
             life_system: self.life_system,
             physics_system: self.physics_system,
             my_type,
+            feature_type: self.feature_type,
         })
     }
 }
@@ -159,6 +184,7 @@ mod test {
     use ggez::nalgebra::Point2;
 
     use crate::draw_systems::player_draw_system::PlayerDrawSystem;
+    use crate::game_objects::game_object_types::GameObjectfeatureTypes;
     use crate::{
         config, life_systems::player_life_system::PlayerLifeSystem,
         physics_systems::player_physics_system::PlayerPhysicsSystem,
@@ -247,5 +273,16 @@ mod test {
             .build()
             .unwrap();
         assert_eq!(game_object.is_offscreen_left(), false);
+    }
+
+    #[test]
+    fn ci_test_creating_pit1() {
+        let pit1 = GameObjectBuilder::new()
+            .with_type(GameObjectTypes::Feature)
+            .with_feature_type(GameObjectfeatureTypes::Pit1)
+            .build()
+            .unwrap();
+
+        assert_eq!(pit1.feature_type, Some(GameObjectfeatureTypes::Pit1));
     }
 }
