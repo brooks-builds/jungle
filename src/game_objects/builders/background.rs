@@ -5,7 +5,6 @@ use crate::config::Config;
 use crate::draw_systems::ground_draw_system::GroundDrawSystem;
 use crate::draw_systems::tree_draw_system::TreeDrawSystem;
 use crate::game_objects::game_object::{GameObjectBuilder, GameObjectBuilderError};
-use crate::game_objects::game_object_types::GameObjectfeatureTypes;
 use crate::game_objects::{GameObject, GameObjectTypes};
 use crate::images::Images;
 
@@ -152,7 +151,6 @@ mod tests {
     #[test]
     fn ci_test_create_trees() {
         let trees: GameObject = super::create_trees().unwrap();
-        let config = config::load("config.json").unwrap();
 
         assert_eq!(trees.feature_type, None);
         assert_eq!(trees.my_type, GameObjectTypes::Background);

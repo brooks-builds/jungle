@@ -37,7 +37,7 @@ impl GroundDrawSystem {
 impl DrawSystem for GroundDrawSystem {
     fn draw(
         &mut self,
-        images: &mut crate::images::Images,
+        _images: &mut crate::images::Images,
         _config: &crate::config::Config,
         context: &mut ggez::Context,
         _location: &ggez::nalgebra::Point2<f32>,
