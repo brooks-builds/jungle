@@ -75,6 +75,7 @@ impl DrawSystem for PlayerDrawSystem {
                         .scale([-1.0, 1.0]);
                 }
                 PhysicsState::Falling => {}
+                PhysicsState::Jumping => {}
             }
         }
 

@@ -8,6 +8,7 @@ where
         Button::Start => ser.serialize_str("Start"),
         Button::DPadRight => ser.serialize_str("DPadRight"),
         Button::DPadLeft => ser.serialize_str("DPadLeft"),
+        Button::South => ser.serialize_str("South"),
         _ => Err(serde::ser::Error::custom("unknown button pressed")),
     }
 }
@@ -22,6 +23,7 @@ where
         "Start" => Ok(Button::Start),
         "DPadRight" => Ok(Button::DPadRight),
         "DPadLeft" => Ok(Button::DPadLeft),
+        "South" => Ok(Button::South),
         _ => Err(serde::de::Error::custom("Unknown button")),
     }
 }

@@ -4,21 +4,23 @@ use crate::{config::Config, scenes::ActiveScene};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Command {
-    StartGame,
-    MoveRight,
-    StopMovingRight,
+    Jump,
     MoveLeft,
+    MoveRight,
+    StartGame,
     StopMovingLeft,
+    StopMovingRight,
 }
 
 impl Command {
     pub fn stop(&mut self) {
         match self {
+            Command::Jump => {}
+            Command::MoveLeft => *self = Command::StopMovingLeft,
             Command::MoveRight => *self = Command::StopMovingRight,
             Command::StartGame => {}
-            Command::StopMovingRight => {}
-            Command::MoveLeft => *self = Command::StopMovingLeft,
             Command::StopMovingLeft => {}
+            Command::StopMovingRight => {}
         }
     }
 }
@@ -28,6 +30,10 @@ pub struct HandleInput {
     start_button: Button,
     move_right: Button,
     move_left: Button,
+    jump_button_1: Button,
+    jump_button_2: Button,
+    jump_button_3: Button,
+    jump_button_4: Button,
 }
 
 impl HandleInput {
@@ -36,12 +42,20 @@ impl HandleInput {
         let start_button = config.start_button;
         let move_right = config.move_right_button;
         let move_left = config.move_left_button;
+        let jump_button_1 = Button::North;
+        let jump_button_2 = Button::East;
+        let jump_button_3 = Button::South;
+        let jump_button_4 = Button::West;
 
         Ok(Self {
             gamepad,
             start_button,
             move_right,
             move_left,
+            jump_button_1,
+            jump_button_2,
+            jump_button_3,
+            jump_button_4,
         })
     }
 
@@ -75,11 +89,18 @@ impl HandleInput {
     }
 
     fn button_to_command(&self, button: Button, current_scene: &ActiveScene) -> Option<Command> {
-        dbg!(button);
         match (button, current_scene) {
             (button, ActiveScene::Start) if button == self.start_button => Some(Command::StartGame),
             (button, ActiveScene::Main) if button == self.move_right => Some(Command::MoveRight),
             (button, ActiveScene::Main) if button == self.move_left => Some(Command::MoveLeft),
+            (button, ActiveScene::Main)
+                if button == self.jump_button_1
+                    || button == self.jump_button_2
+                    || button == self.jump_button_3
+                    || button == self.jump_button_4 =>
+            {
+                Some(Command::Jump)
+            }
             _ => None,
         }
     }
@@ -159,5 +180,16 @@ mod test {
         let mut command = Command::MoveLeft;
         command.stop();
         assert_eq!(command, Command::StopMovingLeft);
+    }
+
+    #[test]
+    fn ci_test_jumping() {
+        let scene = ActiveScene::Main;
+        let config = Config::default();
+        let handle_input = HandleInput::new(&config).unwrap();
+        let command = handle_input
+            .button_to_command(config.jump_button, &scene)
+            .unwrap();
+        assert_eq!(command, Command::Jump);
     }
 }

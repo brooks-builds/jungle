@@ -14,6 +14,7 @@ pub struct PlayerPhysicsSystem {
     height: f32,
     cave_floor_y: f32,
     on_surface: bool,
+    jump_force: f32,
 }
 
 impl PlayerPhysicsSystem {
@@ -25,6 +26,7 @@ impl PlayerPhysicsSystem {
         let height = config.player_height;
         let cave_floor_y = config.resolution_y - config.bedrock_height;
         let on_surface = true;
+        let jump_force = -config.jump_force;
 
         Self {
             state,
@@ -34,6 +36,37 @@ impl PlayerPhysicsSystem {
             height,
             cave_floor_y,
             on_surface,
+            jump_force,
+        }
+    }
+
+    fn handle_command(&mut self, command: Command) {
+        match command {
+            Command::Jump => match self.state {
+                PhysicsState::Falling => {}
+                PhysicsState::Jumping => {}
+                PhysicsState::MovingLeft => self.state = PhysicsState::Jumping,
+                PhysicsState::MovingRight => self.state = PhysicsState::Jumping,
+                PhysicsState::StandingStill => self.state = PhysicsState::Jumping,
+            },
+            Command::MoveLeft => {}
+            Command::MoveRight => {}
+            Command::StartGame => {}
+            Command::StopMovingLeft => {}
+            Command::StopMovingRight => {}
+        }
+    }
+
+    fn handle_state(&mut self) {
+        match self.state {
+            PhysicsState::Falling => {}
+            PhysicsState::Jumping => {
+                self.velocity.y = self.jump_force;
+                self.state = PhysicsState::Falling;
+            }
+            PhysicsState::MovingLeft => {}
+            PhysicsState::MovingRight => {}
+            PhysicsState::StandingStill => {}
         }
     }
 }
@@ -45,6 +78,12 @@ impl PhysicsSystem for PlayerPhysicsSystem {
         command: Option<crate::handle_input::Command>,
         features: Vec<GameObject>,
     ) {
+        if let Some(command) = command {
+            self.handle_command(command);
+        }
+
+        self.handle_state();
+
         if self.state != PhysicsState::Falling {
             if let Some(command) = command {
                 match command {
@@ -53,27 +92,28 @@ impl PhysicsSystem for PlayerPhysicsSystem {
                     Command::StartGame => {}
                     Command::MoveLeft => self.state = PhysicsState::MovingLeft,
                     Command::StopMovingLeft => self.state = PhysicsState::StandingStill,
+                    Command::Jump => {}
                 }
             }
         }
 
-        match self.state {
-            PhysicsState::MovingRight => self.velocity.x = self.speed,
-            PhysicsState::StandingStill => {
-                self.velocity.x = 0.0;
-                self.velocity.y = 0.0;
-            }
-            PhysicsState::MovingLeft => self.velocity.x = -self.speed,
-            PhysicsState::Falling => {
-                self.velocity.x = 0.0;
-                self.velocity.y = self.speed;
-                if location.y + self.height / 2.0 >= self.cave_floor_y {
-                    location.y = self.cave_floor_y - self.height / 2.0;
-                    self.state = PhysicsState::StandingStill;
-                }
-            }
-        }
-        // dbg!(self.state);
+        // match self.state {
+        //     PhysicsState::MovingRight => self.velocity.x = self.speed,
+        //     PhysicsState::StandingStill => {
+        //         self.velocity.x = 0.0;
+        //         self.velocity.y = 0.0;
+        //     }
+        //     PhysicsState::MovingLeft => self.velocity.x = -self.speed,
+        //     PhysicsState::Falling => {
+        //         self.velocity.x = 0.0;
+        //         // self.velocity.y = self.speed;
+        //         if location.y + self.height / 2.0 >= self.cave_floor_y {
+        //             location.y = self.cave_floor_y - self.height / 2.0;
+        //             self.state = PhysicsState::StandingStill;
+        //         }
+        //     }
+        //     PhysicsState::Jumping => {}
+        // }
 
         features.iter().for_each(|feature| {
             if let Some(feature_type) = feature.feature_type {
@@ -106,6 +146,7 @@ impl PhysicsSystem for PlayerPhysicsSystem {
 mod test {
     use ggez::nalgebra::Point2;
 
+    use crate::draw_systems::player_draw_system::PlayerDrawSystem;
     use crate::{config, handle_input::Command};
 
     use super::*;
@@ -189,5 +230,40 @@ mod test {
         assert_eq!(location.x, -config.player_speed * 2.0);
         assert_eq!(location.y, 0.0);
         assert_eq!(player_physics_system.state, PhysicsState::StandingStill);
+    }
+
+    #[test]
+    fn ci_test_set_state_to_jumping() {
+        let config = Config::default();
+        let mut player_physics_system = PlayerPhysicsSystem::new(&config);
+        assert_eq!(player_physics_system.state, PhysicsState::StandingStill);
+        let command = Command::Jump;
+
+        player_physics_system.handle_command(command);
+        assert_eq!(player_physics_system.state, PhysicsState::Jumping);
+
+        player_physics_system.state = PhysicsState::MovingLeft;
+        player_physics_system.handle_command(command);
+        assert_eq!(player_physics_system.state, PhysicsState::Jumping);
+
+        player_physics_system.state = PhysicsState::MovingRight;
+        player_physics_system.handle_command(command);
+        assert_eq!(player_physics_system.state, PhysicsState::Jumping);
+    }
+
+    #[test]
+    #[allow(clippy::float_cmp)]
+    fn ci_test_handle_jumping_state() {
+        let config = Config::default();
+        let mut player_physics_system = PlayerPhysicsSystem::new(&config);
+        player_physics_system.state = PhysicsState::Jumping;
+
+        player_physics_system.handle_state();
+
+        assert_eq!(
+            player_physics_system.velocity.y,
+            player_physics_system.jump_force
+        );
+        assert_eq!(player_physics_system.state, PhysicsState::Falling);
     }
 }
