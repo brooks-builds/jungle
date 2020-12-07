@@ -75,6 +75,7 @@ impl HandleInput {
     }
 
     fn button_to_command(&self, button: Button, current_scene: &ActiveScene) -> Option<Command> {
+        dbg!(button);
         match (button, current_scene) {
             (button, ActiveScene::Start) if button == self.start_button => Some(Command::StartGame),
             (button, ActiveScene::Main) if button == self.move_right => Some(Command::MoveRight),
