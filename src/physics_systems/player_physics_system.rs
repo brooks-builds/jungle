@@ -15,6 +15,8 @@ pub struct PlayerPhysicsSystem {
     cave_floor_y: f32,
     on_surface: bool,
     jump_force: f32,
+    gravity_force: f32,
+    surface_floor_y: f32,
 }
 
 impl PlayerPhysicsSystem {
@@ -27,6 +29,13 @@ impl PlayerPhysicsSystem {
         let cave_floor_y = config.resolution_y - config.bedrock_height;
         let on_surface = true;
         let jump_force = -config.jump_force;
+        let gravity_force = config.gravity_force;
+        let surface_floor_y = config.resolution_y
+            - config.bedrock_height
+            - config.cave_height
+            - config.ground_height
+            - config.surface_bottom_height
+            - config.player_height / 2.0;
 
         Self {
             state,
@@ -37,6 +46,8 @@ impl PlayerPhysicsSystem {
             cave_floor_y,
             on_surface,
             jump_force,
+            gravity_force,
+            surface_floor_y,
         }
     }
 
@@ -49,25 +60,48 @@ impl PlayerPhysicsSystem {
                 PhysicsState::MovingRight => self.state = PhysicsState::Jumping,
                 PhysicsState::StandingStill => self.state = PhysicsState::Jumping,
             },
-            Command::MoveLeft => {}
-            Command::MoveRight => {}
+            Command::MoveLeft => self.state = PhysicsState::MovingLeft,
+            Command::MoveRight => self.state = PhysicsState::MovingRight,
             Command::StartGame => {}
-            Command::StopMovingLeft => {}
-            Command::StopMovingRight => {}
+            Command::StopMovingLeft => self.state = PhysicsState::StandingStill,
+            Command::StopMovingRight => self.state = PhysicsState::StandingStill,
         }
     }
 
-    fn handle_state(&mut self) {
+    fn handle_state(&mut self, location: &mut Point2<f32>) {
         match self.state {
-            PhysicsState::Falling => {}
+            PhysicsState::Falling => {
+                self.apply_gravity();
+                if self.on_surface {
+                    if location.y > self.surface_floor_y {
+                        location.y = self.surface_floor_y;
+                        self.state = PhysicsState::StandingStill;
+                        self.velocity.y = 0.0;
+                    }
+                } else if location.y > self.cave_floor_y {
+                    location.y = self.cave_floor_y;
+                    self.state = PhysicsState::StandingStill;
+                    self.velocity.y = 0.0;
+                }
+            }
             PhysicsState::Jumping => {
                 self.velocity.y = self.jump_force;
                 self.state = PhysicsState::Falling;
             }
-            PhysicsState::MovingLeft => {}
-            PhysicsState::MovingRight => {}
-            PhysicsState::StandingStill => {}
+            PhysicsState::MovingLeft => {
+                self.velocity.x = -self.speed;
+            }
+            PhysicsState::MovingRight => {
+                self.velocity.x = self.speed;
+            }
+            PhysicsState::StandingStill => {
+                self.velocity.x = 0.0;
+            }
         }
+    }
+
+    fn apply_gravity(&mut self) {
+        self.velocity.y += self.gravity_force;
     }
 }
 
@@ -82,38 +116,7 @@ impl PhysicsSystem for PlayerPhysicsSystem {
             self.handle_command(command);
         }
 
-        self.handle_state();
-
-        if self.state != PhysicsState::Falling {
-            if let Some(command) = command {
-                match command {
-                    Command::MoveRight => self.state = PhysicsState::MovingRight,
-                    Command::StopMovingRight => self.state = PhysicsState::StandingStill,
-                    Command::StartGame => {}
-                    Command::MoveLeft => self.state = PhysicsState::MovingLeft,
-                    Command::StopMovingLeft => self.state = PhysicsState::StandingStill,
-                    Command::Jump => {}
-                }
-            }
-        }
-
-        // match self.state {
-        //     PhysicsState::MovingRight => self.velocity.x = self.speed,
-        //     PhysicsState::StandingStill => {
-        //         self.velocity.x = 0.0;
-        //         self.velocity.y = 0.0;
-        //     }
-        //     PhysicsState::MovingLeft => self.velocity.x = -self.speed,
-        //     PhysicsState::Falling => {
-        //         self.velocity.x = 0.0;
-        //         // self.velocity.y = self.speed;
-        //         if location.y + self.height / 2.0 >= self.cave_floor_y {
-        //             location.y = self.cave_floor_y - self.height / 2.0;
-        //             self.state = PhysicsState::StandingStill;
-        //         }
-        //     }
-        //     PhysicsState::Jumping => {}
-        // }
+        self.handle_state(location);
 
         features.iter().for_each(|feature| {
             if let Some(feature_type) = feature.feature_type {
@@ -257,13 +260,72 @@ mod test {
         let config = Config::default();
         let mut player_physics_system = PlayerPhysicsSystem::new(&config);
         player_physics_system.state = PhysicsState::Jumping;
+        let mut location = Point2::new(0.0, 0.0);
 
-        player_physics_system.handle_state();
+        player_physics_system.handle_state(&mut location);
 
         assert_eq!(
             player_physics_system.velocity.y,
             player_physics_system.jump_force
         );
         assert_eq!(player_physics_system.state, PhysicsState::Falling);
+    }
+
+    #[test]
+    #[allow(clippy::float_cmp)]
+    fn ci_test_apply_gravity() {
+        let config = Config::default();
+        let mut player_physics_system = PlayerPhysicsSystem::new(&config);
+        player_physics_system.state = PhysicsState::Falling;
+        player_physics_system.apply_gravity();
+        assert_eq!(
+            player_physics_system.velocity.y,
+            player_physics_system.gravity_force
+        );
+    }
+
+    #[test]
+    #[allow(clippy::float_cmp)]
+    fn ci_test_update_stop_falling_when_hit_surface() {
+        let config = Config::default();
+        let mut player_physics_system = PlayerPhysicsSystem::new(&config);
+        let mut location = Point2::new(0.0, player_physics_system.surface_floor_y);
+        let command = None;
+        let features = vec![];
+
+        player_physics_system.state = PhysicsState::Falling;
+        player_physics_system.velocity.y = 1.0;
+
+        player_physics_system.update(&mut location, command, features);
+        player_physics_system.update(&mut location, command, vec![]);
+        assert_eq!(
+            player_physics_system.surface_floor_y,
+            config.resolution_y
+                - config.bedrock_height
+                - config.cave_height
+                - config.ground_height
+                - config.surface_bottom_height
+                - config.player_height / 2.0
+        );
+        assert_eq!(location.y, player_physics_system.surface_floor_y);
+        assert_eq!(player_physics_system.state, PhysicsState::StandingStill);
+        assert_eq!(player_physics_system.velocity.y, 0.0);
+    }
+
+    #[test]
+    #[allow(clippy::float_cmp)]
+    fn ci_test_falling_when_updating() {
+        let config = Config::default();
+        let mut player_physics_system = PlayerPhysicsSystem::new(&config);
+        let mut location = Point2::new(0.0, -1.0);
+        let command = None;
+        let features = vec![];
+
+        player_physics_system.state = PhysicsState::Falling;
+        let expected_location_y = location.y + player_physics_system.gravity_force;
+
+        player_physics_system.update(&mut location, command, features);
+        assert_eq!(location.x, 0.0);
+        assert_eq!(location.y, expected_location_y);
     }
 }

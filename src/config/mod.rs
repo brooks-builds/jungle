@@ -23,6 +23,7 @@ pub struct Config {
     pub font_large: f32,
     pub font_medium: f32,
     pub font_small: f32,
+    pub gravity_force: f32,
     #[serde(with = "crate::config::serde_color")]
     pub ground_color: Color,
     pub ground_height: f32,
@@ -90,6 +91,7 @@ impl Default for Config {
             font_large: 72.0,
             font_medium: 55.0,
             font_small: 36.0,
+            gravity_force: 1.0,
             ground_color: Color::from_rgb(146, 137, 60),
             ground_height: 50.0,
             jump_button: Button::South,

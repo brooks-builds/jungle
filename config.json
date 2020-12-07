@@ -9,6 +9,7 @@
     "font_large": 72.0,
     "font_medium": 55.0,
     "font_small": 36.0,
+    "gravity_force": 1.0,
     "ground_color": [146,137,60],
     "ground_height": 50.0,
     "jump_button": "South",
