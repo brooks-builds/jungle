@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub struct ConfigMap {
-    pub pits: u8,
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+pub enum MapFeature {
+    Pit1,
+    Pit3,
+    Rope,
 }

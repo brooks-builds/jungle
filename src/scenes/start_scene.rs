@@ -5,9 +5,7 @@ use ggez::{
     Context, GameResult,
 };
 
-use crate::{config::Config, handle_input::Command, images::Images};
-
-use super::Scene;
+use crate::{config::Config, handle_input::Command};
 
 pub struct StartScene {
     title: Text,
@@ -40,14 +38,10 @@ impl StartScene {
             subtitle_position,
         }
     }
-}
 
-impl Scene for StartScene {
-    fn update(
+    pub fn update(
         &mut self,
-        _context: &mut Context,
         command: Option<Command>,
-        _config: &Config,
         active_scene: &mut super::ActiveScene,
     ) -> GameResult {
         if let Some(command) = command {
@@ -58,12 +52,7 @@ impl Scene for StartScene {
         Ok(())
     }
 
-    fn draw(
-        &mut self,
-        context: &mut Context,
-        _config: &Config,
-        _images: &mut Images,
-    ) -> GameResult {
+    pub fn draw(&mut self, context: &mut Context) -> GameResult {
         graphics::draw(
             context,
             &self.title,

@@ -4,10 +4,6 @@ use ggez::{
     Context, GameResult,
 };
 
-use crate::{config::Config, handle_input::Command, images::Images};
-
-use super::Scene;
-
 #[derive(Default)]
 pub struct EndScene {
     text: Text,
@@ -20,25 +16,12 @@ impl EndScene {
 
         EndScene { text }
     }
-}
 
-impl Scene for EndScene {
-    fn update(
-        &mut self,
-        _context: &mut Context,
-        _button_pressed: Option<Command>,
-        _config: &Config,
-        _active_scene: &mut super::ActiveScene,
-    ) -> GameResult {
+    pub fn update(&mut self) -> GameResult {
         Ok(())
     }
 
-    fn draw(
-        &mut self,
-        context: &mut Context,
-        _config: &Config,
-        _images: &mut Images,
-    ) -> GameResult {
+    pub fn draw(&mut self, context: &mut Context) -> GameResult {
         graphics::draw(context, &self.text, DrawParam::new())
     }
 }

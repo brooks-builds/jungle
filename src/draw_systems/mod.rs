@@ -4,9 +4,11 @@ use crate::{
     config::Config, images::Images, life_systems::LifeSystem, physics_systems::PhysicsState,
 };
 
-pub mod background_draw_system;
+pub mod ground_draw_system;
 pub mod hearts_draw_system;
 pub mod player_draw_system;
+pub mod single_pit_draw_system;
+pub mod tree_draw_system;
 
 pub trait DrawSystem {
     fn draw(
