@@ -1,6 +1,7 @@
 use ggez::nalgebra::Point2;
 
 use crate::config::Config;
+use crate::game_objects::GameObject;
 use crate::handle_input::Command;
 
 use super::{PhysicsState, PhysicsSystem};
@@ -14,6 +15,8 @@ pub struct PlayerPhysicsSystem {
     jump_force: f32,
     on_surface: bool,
     cave_floor_y: f32,
+    speed: f32,
+    width: f32,
 }
 
 impl PlayerPhysicsSystem {
@@ -27,39 +30,99 @@ impl PlayerPhysicsSystem {
             jump_force: config.jump_force,
             on_surface: true,
             cave_floor_y: config.resolution_y - config.bedrock_height,
+            speed: config.player_speed,
+            width: config.player_width,
         }
     }
 
-    fn collide_with_ground(&mut self, location: &mut Point2<f32>) {
-        if self.on_surface {
-            if location.y + self.height / 2.0 > self.surface_floor_y {
-                location.y = self.surface_floor_y - self.height / 2.0;
-                self.velocity.y = 0.0;
-                self.state = PhysicsState::StandingStill;
+    fn collide_with_ground(&mut self, location: &mut Point2<f32>, features: Vec<GameObject>) {
+        // if we collide with a pit, then we reset floor to the cave floor
+        let floor_y = if self.on_surface {
+            self.surface_floor_y
+        } else {
+            self.cave_floor_y
+        };
+
+        features.iter().for_each(|feature| {
+            if let Some(feature_type) = feature.feature_type {
+                match feature_type {
+                    crate::game_objects::game_object_types::GameObjectfeatureTypes::Pit1 => {
+                        if self.is_colliding_with(location, feature)
+                            && location.y + self.height / 2.0 > floor_y
+                            && self.on_surface
+                        {
+                            self.on_surface = false;
+                        }
+                    }
+                }
             }
-        } else if location.y + self.height / 2.0 > self.cave_floor_y {
-            location.y = self.cave_floor_y - self.height / 2.0;
+        });
+
+        if location.y + self.height / 2.0 > floor_y {
+            location.y = floor_y - self.height / 2.0;
             self.velocity.y = 0.0;
-            self.state = PhysicsState::StandingStill;
+            self.state = if self.state == PhysicsState::Jumping {
+                PhysicsState::StandingStill
+            } else {
+                self.state
+            };
         }
+    }
+
+    fn is_colliding_with(&self, location: &mut Point2<f32>, other: &GameObject) -> bool {
+        location.x - self.width / 2.0 > other.location.x - other.width / 2.0
+            && location.x + self.width / 2.0 < other.location.x + other.width / 2.0
+            && location.y + self.height / 2.0 > other.location.y - other.height / 2.0
+            && location.y - self.height / 2.0 < other.location.y + other.height / 2.0
     }
 
     fn handle_command(&mut self, location: &mut Point2<f32>, command: Option<Command>) {
         if let Some(command) = command {
             match command {
-                crate::handle_input::Command::Jump => {
-                    if location.y + self.height / 2.0 >= self.surface_floor_y {
-                        self.velocity.y -= self.jump_force;
-                        self.state = PhysicsState::Jumping;
-                    }
-                }
-                crate::handle_input::Command::MoveLeft => {}
-                crate::handle_input::Command::MoveRight => {}
+                crate::handle_input::Command::Jump => self.handle_jump_command(location),
+                crate::handle_input::Command::MoveLeft => self.handle_move_left_command(),
+                crate::handle_input::Command::MoveRight => self.handle_move_right_command(),
                 crate::handle_input::Command::StartGame => {}
-                crate::handle_input::Command::StopMovingLeft => {}
-                crate::handle_input::Command::StopMovingRight => {}
+                crate::handle_input::Command::StopMovingLeft => {
+                    self.handle_stop_moving_left_command()
+                }
+                crate::handle_input::Command::StopMovingRight => {
+                    self.handle_stop_moving_right_command()
+                }
             }
         }
+    }
+
+    fn handle_jump_command(&mut self, location: &mut Point2<f32>) {
+        let floor_y = if self.on_surface {
+            self.surface_floor_y
+        } else {
+            self.cave_floor_y
+        };
+        if location.y + self.height / 2.0 >= floor_y {
+            self.velocity.y -= self.jump_force;
+            self.state = PhysicsState::Jumping;
+        }
+    }
+
+    fn handle_move_right_command(&mut self) {
+        self.state = PhysicsState::MovingRight;
+        self.velocity.x += self.speed;
+    }
+
+    fn handle_stop_moving_right_command(&mut self) {
+        self.velocity.x = 0.0;
+        self.state = PhysicsState::StandingStill;
+    }
+
+    fn handle_move_left_command(&mut self) {
+        self.state = PhysicsState::MovingLeft;
+        self.velocity.x -= self.speed;
+    }
+
+    fn handle_stop_moving_left_command(&mut self) {
+        self.state = PhysicsState::StandingStill;
+        self.velocity.x = 0.0;
     }
 }
 
@@ -73,7 +136,8 @@ impl PhysicsSystem for PlayerPhysicsSystem {
         self.velocity.y += self.gravity_force;
         self.handle_command(location, command);
         location.y += self.velocity.y;
-        self.collide_with_ground(location);
+        location.x += self.velocity.x;
+        self.collide_with_ground(location, features);
     }
 
     fn get_state(&self) -> super::PhysicsState {
@@ -83,10 +147,10 @@ impl PhysicsSystem for PlayerPhysicsSystem {
 
 #[cfg(test)]
 mod test {
-    use ggez::conf::Conf;
     use ggez::nalgebra::Point2;
 
     use crate::config::Config;
+    use crate::game_objects::builders::pit1::create_pit1;
     use crate::handle_input::Command;
     use crate::physics_systems::PhysicsState;
 
@@ -109,6 +173,8 @@ mod test {
             player_physics_system.cave_floor_y,
             config.resolution_y - config.bedrock_height
         );
+        assert_eq!(player_physics_system.speed, config.player_speed);
+        assert_eq!(player_physics_system.width, config.player_width);
     }
 
     #[test]
@@ -148,6 +214,73 @@ mod test {
             Point2::new(
                 0.0,
                 player_physics_system.cave_floor_y - player_physics_system.height / 2.0
+            )
+        );
+    }
+
+    #[test]
+    fn ci_test_player_physics_update_move_right() {
+        let (mut player_physics_system, config) = create_player_physics_system();
+        let mut location = Point2::new(0.0, config.player_starting_y);
+        let move_right_command = Some(Command::MoveRight);
+        let features = vec![];
+        player_physics_system.update(&mut location, move_right_command, features.clone());
+        assert_eq!(
+            location,
+            Point2::new(config.player_speed, config.player_starting_y)
+        );
+        assert_eq!(player_physics_system.state, PhysicsState::MovingRight);
+
+        let stop_moving_right_command = Some(Command::StopMovingRight);
+        player_physics_system.update(&mut location, stop_moving_right_command, features);
+        assert_eq!(player_physics_system.state, PhysicsState::StandingStill);
+        assert_eq!(
+            location,
+            Point2::new(config.player_speed, config.player_starting_y)
+        );
+    }
+
+    #[test]
+    fn ci_test_player_physics_update_move_left() {
+        let (mut player_physics_system, config) = create_player_physics_system();
+        let mut location = Point2::new(0.0, config.player_starting_y);
+        let move_left_command = Some(Command::MoveLeft);
+        let features = vec![];
+        player_physics_system.update(&mut location, move_left_command, features.clone());
+        assert_eq!(
+            location,
+            Point2::new(-config.player_speed, config.player_starting_y)
+        );
+        assert_eq!(player_physics_system.state, PhysicsState::MovingLeft);
+
+        let stop_moving_left_command = Some(Command::StopMovingLeft);
+        player_physics_system.update(&mut location, stop_moving_left_command, features);
+        assert_eq!(player_physics_system.state, PhysicsState::StandingStill);
+        assert_eq!(
+            location,
+            Point2::new(-config.player_speed, config.player_starting_y)
+        );
+    }
+
+    #[test]
+    fn ci_test_player_physics_system_falling_into_pit() {
+        let (mut player_physics_system, config) = create_player_physics_system();
+        let mut location = Point2::new(config.player_starting_x, config.player_starting_y);
+        let features = vec![create_pit1(&config).unwrap()];
+        let no_command = None;
+        player_physics_system.update(&mut location, no_command, features.clone());
+        assert_eq!(
+            location,
+            Point2::new(config.player_starting_x, config.player_starting_y)
+        );
+        location.x = features[0].location.x;
+        player_physics_system.update(&mut location, no_command, features.clone());
+        player_physics_system.update(&mut location, no_command, features.clone());
+        assert_eq!(
+            location,
+            Point2::new(
+                features[0].location.x,
+                config.player_starting_y + player_physics_system.gravity_force
             )
         );
     }

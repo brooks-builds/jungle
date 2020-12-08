@@ -74,7 +74,6 @@ impl DrawSystem for PlayerDrawSystem {
                         .offset(Point2::new(1.0, 0.0))
                         .scale([-1.0, 1.0]);
                 }
-                PhysicsState::Falling => {}
                 PhysicsState::Jumping => {}
             }
         }
