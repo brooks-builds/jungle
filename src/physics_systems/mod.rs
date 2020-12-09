@@ -6,10 +6,10 @@ pub mod player_physics_system;
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum PhysicsState {
-    StandingStill,
-    MovingRight,
+    Jumping,
     MovingLeft,
-    Falling,
+    MovingRight,
+    StandingStill,
 }
 
 pub trait PhysicsSystem {
