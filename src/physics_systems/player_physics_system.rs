@@ -47,11 +47,12 @@ impl PlayerPhysicsSystem {
             if let Some(feature_type) = feature.feature_type {
                 match feature_type {
                     crate::game_objects::game_object_types::GameObjectfeatureTypes::Pit1 => {
-                        if self.is_colliding_with(location, feature)
-                            && location.y + self.height / 2.0 > floor_y
-                            && self.on_surface
+                        if self.on_surface
+                            && self.is_inside_horizontal(location, feature)
+                            && location.y + self.height / 2.0 >= floor_y
                         {
                             self.on_surface = false;
+                            self.velocity.x = 0.0;
                         }
                     }
                 }
@@ -69,11 +70,17 @@ impl PlayerPhysicsSystem {
         }
     }
 
-    fn is_colliding_with(&self, location: &mut Point2<f32>, other: &GameObject) -> bool {
-        location.x - self.width / 2.0 > other.location.x - other.width / 2.0
-            && location.x + self.width / 2.0 < other.location.x + other.width / 2.0
-            && location.y + self.height / 2.0 > other.location.y - other.height / 2.0
-            && location.y - self.height / 2.0 < other.location.y + other.height / 2.0
+    fn is_inside_horizontal(&self, location: &mut Point2<f32>, other: &GameObject) -> bool {
+        let player_left = location.x - self.width / 2.0;
+        let player_right = location.x + self.width / 2.0;
+        let player_top = location.y - self.height / 2.0;
+        let player_bottom = location.y + self.height / 2.0;
+        let other_left = other.location.x - other.width / 2.0;
+        let other_right = other.location.x + other.width / 2.0;
+        let other_top = other.location.y - other.height / 2.0;
+        let other_bottom = other.location.y + other.height / 2.0;
+
+        player_left > other_left && player_right < other_right
     }
 
     fn handle_command(&mut self, location: &mut Point2<f32>, command: Option<Command>) {

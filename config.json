@@ -35,7 +35,7 @@
     "player_standing_image": "/jungle_player_standing.png",
     "player_starting_x": 150.0,
     "player_starting_y": 710.0,
-    "player_width": 80.0,
+    "player_width": 60.0,
     "resolution_x": 1920,
     "resolution_y": 1080,
     "sky_color": [164, 196, 112],
