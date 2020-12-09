@@ -1,5 +1,7 @@
 # jungle
 
+![Rust](https://github.com/brooks-builds/jungle/workflows/Rust/badge.svg)
+
 This game is inspired by [Pitfall]() from the Atari 2600.
 
 ## Design Doc

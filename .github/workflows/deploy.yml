@@ -15,7 +15,7 @@ jobs:
       - name: Update
         run: sudo apt-get update
       - name: Install Packages
-        run: sudo apt-get install libasound2-dev libudev-dev pkg-config
+        run: sudo apt-get install -y libasound2-dev libudev-dev pkg-config jq
       - uses: actions/cache@v2
         with:
           path: |
@@ -38,6 +38,8 @@ jobs:
         run: cargo build --release
       - name: package
         run: mkdir dist && zip -r dist/jungle_game resources target/release/jungle
+      -name: set version
+        run: cargo metadata --no-deps --format-version 1 | jq '.packages[0].version' > dist/version
       - uses: jakejarvis/s3-sync-action@master
         with:
           args: --acl public-read --follow-symlinks --delete
