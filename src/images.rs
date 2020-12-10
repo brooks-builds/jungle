@@ -1,4 +1,4 @@
-use ggez::graphics::{DrawMode, Mesh, MeshBuilder, Rect};
+use ggez::graphics::{DrawMode, Mesh, MeshBuilder, Rect, BLACK};
 use ggez::nalgebra::Point2;
 use ggez::{graphics::Image, Context, GameResult};
 use rand::prelude::*;
@@ -13,6 +13,7 @@ pub struct Images {
     pub trees: Mesh,
     pub foliage: Mesh,
     pub pit1: Mesh,
+    pub ladder: Mesh,
 }
 
 impl Images {
@@ -25,6 +26,7 @@ impl Images {
             trees: Self::create_trees(context, config)?,
             foliage: Self::create_foliage(context, config)?,
             pit1: Self::create_single_pit(config, context)?,
+            ladder: Self::create_ladder(context, config)?,
         })
     }
 
@@ -141,6 +143,39 @@ impl Images {
         self.trees = Self::create_trees(context, config)?;
 
         Ok(())
+    }
+
+    fn create_ladder(context: &mut Context, config: &Config) -> GameResult<Mesh> {
+        let height = config.cave_height + config.ground_height + config.surface_bottom_height;
+
+        let rung_count = height / (config.ladder_rung_spacing + config.ladder_rung_height);
+
+        let mut mesh = &mut MeshBuilder::new();
+        let rung = Rect::new(
+            config.resolution_x / 2.0 - config.ladder_width / 2.0,
+            config.resolution_y - height - config.bedrock_height,
+            config.ladder_width,
+            config.ladder_rung_height,
+        );
+        let combined_rung_height = config.ladder_rung_spacing + config.ladder_rung_height;
+
+        mesh = mesh.rectangle(
+            DrawMode::fill(),
+            Rect::new(
+                rung.x - config.ladder_margin,
+                rung.y - config.ladder_margin,
+                config.ladder_width + config.ladder_margin * 2.0,
+                height,
+            ),
+            BLACK,
+        );
+        for count in 0..rung_count as u32 {
+            let mut new_rung = rung;
+            new_rung.y += combined_rung_height * count as f32;
+            mesh = mesh.rectangle(DrawMode::fill(), new_rung, config.ladder_rung_color);
+        }
+
+        mesh.build(context)
     }
 }
 

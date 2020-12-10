@@ -6,6 +6,7 @@ use crate::{
 
 pub mod ground_draw_system;
 pub mod hearts_draw_system;
+pub mod ladder_draw_system;
 pub mod player_draw_system;
 pub mod single_pit_draw_system;
 pub mod tree_draw_system;

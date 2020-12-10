@@ -55,6 +55,7 @@ impl PlayerPhysicsSystem {
                             self.velocity.x = 0.0;
                         }
                     }
+                    crate::game_objects::game_object_types::GameObjectfeatureTypes::Ladder => {}
                 }
             }
         });
@@ -73,12 +74,12 @@ impl PlayerPhysicsSystem {
     fn is_inside_horizontal(&self, location: &mut Point2<f32>, other: &GameObject) -> bool {
         let player_left = location.x - self.width / 2.0;
         let player_right = location.x + self.width / 2.0;
-        let player_top = location.y - self.height / 2.0;
-        let player_bottom = location.y + self.height / 2.0;
+        let _player_top = location.y - self.height / 2.0;
+        let _player_bottom = location.y + self.height / 2.0;
         let other_left = other.location.x - other.width / 2.0;
         let other_right = other.location.x + other.width / 2.0;
-        let other_top = other.location.y - other.height / 2.0;
-        let other_bottom = other.location.y + other.height / 2.0;
+        let _other_top = other.location.y - other.height / 2.0;
+        let _other_bottom = other.location.y + other.height / 2.0;
 
         player_left > other_left && player_right < other_right
     }

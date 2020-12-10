@@ -9,4 +9,5 @@ pub enum GameObjectTypes {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum GameObjectfeatureTypes {
     Pit1,
+    Ladder,
 }

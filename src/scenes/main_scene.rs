@@ -5,6 +5,7 @@ use crate::game_objects::builders::background::{
     create_above_ground, create_behind_ground, create_trees,
 };
 use crate::game_objects::builders::hearts::create_hearts;
+use crate::game_objects::builders::ladder::create_ladder;
 use crate::game_objects::builders::pit1::create_pit1;
 use crate::game_objects::builders::player::create_player;
 use crate::game_objects::{GameObjectTypes, GameObjects};
@@ -85,8 +86,10 @@ impl MainScene {
                     let pit1 = create_pit1(config).expect("error creating pit1");
                     self.game_objects.insert(pit1, player_index);
                 }
-                MapFeature::Pit3 => {}
-                MapFeature::Rope => {}
+                MapFeature::Ladder => {
+                    let ladder = create_ladder(config).expect("error creating ladder");
+                    self.game_objects.push(ladder);
+                }
             });
     }
 }

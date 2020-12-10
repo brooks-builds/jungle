@@ -14,9 +14,15 @@
     "ground_height": 50.0,
     "jump_button": "South",
     "jump_force": 10.0,
+    "ladder_margin": 10.0,
+    "ladder_rung_color": [138, 98, 95],
+    "ladder_rung_height": 5,
+    "ladder_rung_spacing": 15,
+    "ladder_width": 100,
     "life_image": "/heart.png",
     "life_width": 32,
     "map": [
+        ["Ladder"],
         ["Pit1"],
         []
     ],
