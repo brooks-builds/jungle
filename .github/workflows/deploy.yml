@@ -28,6 +28,7 @@ jobs:
         with:
           toolchain: stable
           components: clippy, rustfmt
+          target: armv7-unknown-linux-gnueabihf
       - name: Check formatting
         run: cargo fmt -- --check
       - name: Check Clippy
@@ -35,7 +36,7 @@ jobs:
       - name: Test
         run: cargo test ci_test
       - name: Build
-        run: cargo build --release
+        run: cargo build --release --target armv7-unknown-linux-gnueabihf
       - name: package
         run: mkdir dist && zip -r dist/jungle_game resources target/release/jungle
       - name: set version
