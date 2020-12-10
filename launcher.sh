@@ -30,7 +30,7 @@ echo current: $CURRENT_VERSION deployed: $DEPLOYED_VERSION
 if [ "$CURRENT_VERSION" != "$DEPLOYED_VERSION" ]
 then
     curl $GAME_URL > jungle.zip
-    unzip -y jungle.zip
+    unzip -o jungle.zip
     echo $DEPLOYED_VERSION > $VERSION_FILE
     cp target/release/jungle ./
 fi
