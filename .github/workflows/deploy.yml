@@ -38,7 +38,7 @@ jobs:
         run: cargo build --release
       - name: package
         run: mkdir dist && zip -r dist/jungle_game resources target/release/jungle
-      -name: set version
+      - name: set version
         run: cargo metadata --no-deps --format-version 1 | jq '.packages[0].version' > dist/version
       - uses: jakejarvis/s3-sync-action@master
         with:
